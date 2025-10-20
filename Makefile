@@ -1,20 +1,31 @@
 .PHONY: help start stop build clean restart logs test format lint
+.PHONY: restart-qdrant restart-backend restart-frontend logs-qdrant logs-backend logs-frontend
 
 # Default target
 help:
 	@echo "Legal-OS Development Commands"
 	@echo "=============================="
 	@echo ""
-	@echo "Available targets:"
-	@echo "  make start      - Start all services with docker-compose up"
-	@echo "  make stop       - Stop all services with docker-compose down"
-	@echo "  make build      - Build all Docker containers"
-	@echo "  make clean      - Stop services and remove volumes"
-	@echo "  make restart    - Restart all services"
-	@echo "  make logs       - Show logs from all services"
-	@echo "  make test       - Run tests for backend and frontend"
-	@echo "  make format     - Format code (backend: black, frontend: prettier)"
-	@echo "  make lint       - Lint code (backend: ruff, frontend: eslint)"
+	@echo "Service Management:"
+	@echo "  make start            - Start all services"
+	@echo "  make stop             - Stop all services"
+	@echo "  make build            - Build all Docker containers"
+	@echo "  make clean            - Stop services and remove volumes"
+	@echo "  make restart          - Restart all services"
+	@echo "  make restart-qdrant   - Restart only Qdrant"
+	@echo "  make restart-backend  - Restart only backend"
+	@echo "  make restart-frontend - Restart only frontend"
+	@echo ""
+	@echo "Logs & Monitoring:"
+	@echo "  make logs             - Show logs from all services"
+	@echo "  make logs-qdrant      - Show Qdrant logs"
+	@echo "  make logs-backend     - Show backend logs"
+	@echo "  make logs-frontend    - Show frontend logs"
+	@echo ""
+	@echo "Development:"
+	@echo "  make test             - Run tests"
+	@echo "  make format           - Format code"
+	@echo "  make lint             - Lint code"
 	@echo ""
 
 # Start all services
@@ -44,6 +55,29 @@ restart: stop start
 # Show logs
 logs:
 	docker-compose logs -f
+
+# Individual service restarts
+restart-qdrant:
+	@echo "Restarting Qdrant..."
+	docker-compose restart qdrant
+
+restart-backend:
+	@echo "Restarting backend..."
+	docker-compose restart backend
+
+restart-frontend:
+	@echo "Restarting frontend..."
+	docker-compose restart frontend
+
+# Individual service logs
+logs-qdrant:
+	docker-compose logs -f qdrant
+
+logs-backend:
+	docker-compose logs -f backend
+
+logs-frontend:
+	docker-compose logs -f frontend
 
 # Run tests
 test:

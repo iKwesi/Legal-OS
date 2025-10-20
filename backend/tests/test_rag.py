@@ -93,7 +93,7 @@ class TestNaiveRetriever:
     @pytest.fixture
     def retriever(self, mock_vector_store):
         """Create NaiveRetriever with mocked vector store."""
-        with patch("backend.app.rag.retrievers.VectorStore") as mock_vs_class:
+        with patch("app.rag.retrievers.VectorStore") as mock_vs_class:
             mock_vs_class.return_value = mock_vector_store
             return NaiveRetriever(vector_store=mock_vector_store)
 
@@ -175,8 +175,8 @@ class TestRAGPipeline:
     @pytest.fixture
     def pipeline(self, mock_retriever, mock_llm):
         """Create RAGPipeline with mocked dependencies."""
-        with patch("backend.app.rag.pipeline.NaiveRetriever") as mock_ret_class:
-            with patch("backend.app.rag.pipeline.ChatOpenAI") as mock_llm_class:
+        with patch("app.rag.pipeline.NaiveRetriever") as mock_ret_class:
+            with patch("app.rag.pipeline.ChatOpenAI") as mock_llm_class:
                 mock_ret_class.return_value = mock_retriever
                 mock_llm_class.return_value = mock_llm
                 return RAGPipeline(retriever=mock_retriever, llm=mock_llm)

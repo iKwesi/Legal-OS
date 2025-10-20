@@ -7,27 +7,27 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from uuid import uuid4
 
-from app.agents.ingestion import IngestionAgent
+from app.pipelines.ingestion_pipeline import IngestionPipeline
 from app.rag.chunking import DocumentChunker
 from app.rag.vector_store import VectorStore
 
 
-class TestIngestionAgent:
-    """Test suite for IngestionAgent."""
+class TestIngestionPipeline:
+    """Test suite for IngestionPipeline."""
 
     @pytest.fixture
     def mock_vector_store(self):
         """Mock VectorStore for testing."""
-        with patch("backend.app.agents.ingestion.VectorStore") as mock:
+        with patch("app.pipelines.ingestion_pipeline.VectorStore") as mock:
             mock_instance = Mock(spec=VectorStore)
-            mock_instance.add_chunks.return_value = ["chunk1", "chunk2", "chunk3"]
+            mock_instance.add_chunks.return_value = ["chunk1", "chunk2"]
             mock.return_value = mock_instance
             yield mock_instance
 
     @pytest.fixture
     def mock_chunker(self):
         """Mock DocumentChunker for testing."""
-        with patch("backend.app.agents.ingestion.DocumentChunker") as mock:
+        with patch("app.pipelines.ingestion_pipeline.DocumentChunker") as mock:
             mock_instance = Mock(spec=DocumentChunker)
             mock_instance.chunk_document.return_value = [
                 {
@@ -49,32 +49,32 @@ class TestIngestionAgent:
             yield mock_instance
 
     @pytest.fixture
-    def agent(self, mock_vector_store, mock_chunker):
-        """Create IngestionAgent instance with mocked dependencies."""
-        return IngestionAgent()
+    def pipeline(self, mock_vector_store, mock_chunker):
+        """Create IngestionPipeline instance with mocked dependencies."""
+        return IngestionPipeline()
 
     def test_supported_extensions(self):
         """Test that supported extensions are correctly defined."""
-        assert ".pdf" in IngestionAgent.SUPPORTED_EXTENSIONS
-        assert ".docx" in IngestionAgent.SUPPORTED_EXTENSIONS
-        assert ".txt" in IngestionAgent.SUPPORTED_EXTENSIONS
+        assert ".pdf" in IngestionPipeline.SUPPORTED_EXTENSIONS
+        assert ".docx" in IngestionPipeline.SUPPORTED_EXTENSIONS
+        assert ".txt" in IngestionPipeline.SUPPORTED_EXTENSIONS
 
-    def test_load_document_file_not_found(self, agent):
+    def test_load_document_file_not_found(self, pipeline):
         """Test loading a non-existent file raises FileNotFoundError."""
         with pytest.raises(FileNotFoundError):
-            agent.load_document("nonexistent_file.pdf")
+            pipeline.load_document("nonexistent_file.pdf")
 
-    def test_load_document_unsupported_format(self, agent, tmp_path):
+    def test_load_document_unsupported_format(self, pipeline, tmp_path):
         """Test loading unsupported file format raises ValueError."""
         # Create a temporary file with unsupported extension
         test_file = tmp_path / "test.xyz"
         test_file.write_text("test content")
 
         with pytest.raises(ValueError, match="Unsupported file format"):
-            agent.load_document(str(test_file))
+            pipeline.load_document(str(test_file))
 
-    @patch("backend.app.agents.ingestion.PyMuPDFLoader")
-    def test_load_pdf_document(self, mock_loader, agent, tmp_path):
+    @patch("app.pipelines.ingestion_pipeline.PyMuPDFLoader")
+    def test_load_pdf_document(self, mock_loader, pipeline, tmp_path):
         """Test loading a PDF document."""
         # Create a temporary PDF file
         test_file = tmp_path / "test.pdf"
@@ -86,7 +86,7 @@ class TestIngestionAgent:
         mock_loader.return_value.load.return_value = [mock_doc]
 
         # Load document
-        result = agent.load_document(str(test_file))
+        result = pipeline.load_document(str(test_file))
 
         # Assertions
         assert result["file_name"] == "test.pdf"
@@ -94,8 +94,8 @@ class TestIngestionAgent:
         assert result["metadata"]["file_type"] == "pdf"
         assert "document_id" in result
 
-    @patch("backend.app.agents.ingestion.TextLoader")
-    def test_load_txt_document(self, mock_loader, agent, tmp_path):
+    @patch("app.pipelines.ingestion_pipeline.TextLoader")
+    def test_load_txt_document(self, mock_loader, pipeline, tmp_path):
         """Test loading a TXT document."""
         # Create a temporary TXT file
         test_file = tmp_path / "test.txt"
@@ -107,21 +107,21 @@ class TestIngestionAgent:
         mock_loader.return_value.load.return_value = [mock_doc]
 
         # Load document
-        result = agent.load_document(str(test_file))
+        result = pipeline.load_document(str(test_file))
 
         # Assertions
         assert result["file_name"] == "test.txt"
         assert result["content"] == "Test text content"
         assert result["metadata"]["file_type"] == "txt"
 
-    def test_ingest_document(self, agent, mock_chunker, mock_vector_store, tmp_path):
+    def test_ingest_document(self, pipeline, mock_chunker, mock_vector_store, tmp_path):
         """Test full document ingestion pipeline."""
         # Create a temporary file
         test_file = tmp_path / "test.txt"
         test_file.write_text("Test content for ingestion")
 
         # Mock document loading
-        with patch.object(agent, "load_document") as mock_load:
+        with patch.object(pipeline, "load_document") as mock_load:
             mock_load.return_value = {
                 "document_id": "doc1",
                 "file_name": "test.txt",
@@ -131,7 +131,7 @@ class TestIngestionAgent:
 
             # Ingest document
             session_id = str(uuid4())
-            result = agent.ingest_document(str(test_file), session_id)
+            result = pipeline.ingest_document(str(test_file), session_id)
 
             # Assertions
             assert result["status"] == "success"
@@ -142,7 +142,7 @@ class TestIngestionAgent:
             mock_vector_store.add_chunks.assert_called_once()
 
     def test_ingest_documents_batch(
-        self, agent, mock_chunker, mock_vector_store, tmp_path
+        self, pipeline, mock_chunker, mock_vector_store, tmp_path
     ):
         """Test batch document ingestion."""
         # Create temporary files
@@ -152,7 +152,7 @@ class TestIngestionAgent:
         file2.write_text("Content 2")
 
         # Mock document loading
-        with patch.object(agent, "ingest_document") as mock_ingest:
+        with patch.object(pipeline, "ingest_document") as mock_ingest:
             mock_ingest.side_effect = [
                 {
                     "document_id": "doc1",
@@ -170,7 +170,7 @@ class TestIngestionAgent:
 
             # Ingest batch
             session_id = str(uuid4())
-            result = agent.ingest_documents([str(file1), str(file2)], session_id)
+            result = pipeline.ingest_documents([str(file1), str(file2)], session_id)
 
             # Assertions
             assert result["total_documents"] == 2
@@ -178,7 +178,7 @@ class TestIngestionAgent:
             assert result["failed"] == 0
             assert result["total_chunks"] == 5
 
-    def test_ingest_documents_with_failures(self, agent, tmp_path):
+    def test_ingest_documents_with_failures(self, pipeline, tmp_path):
         """Test batch ingestion with some failures."""
         # Create one valid file
         valid_file = tmp_path / "valid.txt"
@@ -188,7 +188,7 @@ class TestIngestionAgent:
         invalid_file = "nonexistent.txt"
 
         # Mock successful ingestion for valid file
-        with patch.object(agent, "ingest_document") as mock_ingest:
+        with patch.object(pipeline, "ingest_document") as mock_ingest:
             mock_ingest.side_effect = [
                 {
                     "document_id": "doc1",
@@ -201,7 +201,7 @@ class TestIngestionAgent:
 
             # Ingest batch
             session_id = str(uuid4())
-            result = agent.ingest_documents(
+            result = pipeline.ingest_documents(
                 [str(valid_file), invalid_file], session_id
             )
 

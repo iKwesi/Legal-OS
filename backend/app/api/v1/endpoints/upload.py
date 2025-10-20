@@ -12,7 +12,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, status
 
 from app.core.config import settings
 from app.models.api import UploadResponse
-from app.agents.ingestion import IngestionAgent
+from app.pipelines.ingestion_pipeline import IngestionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ async def upload_documents(
         for file in files:
             # Validate file extension
             file_ext = Path(file.filename).suffix.lower()
-            if file_ext not in IngestionAgent.SUPPORTED_EXTENSIONS:
+            if file_ext not in IngestionPipeline.SUPPORTED_EXTENSIONS:
                 logger.warning(f"Skipping unsupported file: {file.filename}")
                 continue
 
@@ -104,10 +104,10 @@ async def upload_documents(
                 detail="No valid files to process. Supported formats: PDF, DOCX, TXT",
             )
 
-        # Initialize ingestion agent and process documents
+        # Initialize ingestion pipeline and process documents
         try:
-            ingestion_agent = IngestionAgent()
-            result = ingestion_agent.ingest_documents(
+            ingestion_pipeline = IngestionPipeline()
+            result = ingestion_pipeline.ingest_documents(
                 file_paths=saved_files,
                 session_id=session_id,
             )

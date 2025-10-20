@@ -1,5 +1,5 @@
 """
-Ingestion Agent for document loading, processing, and storage.
+Ingestion Pipeline for document loading, processing, and storage.
 """
 
 import logging
@@ -21,9 +21,9 @@ from app.rag.vector_store import VectorStore
 logger = logging.getLogger(__name__)
 
 
-class IngestionAgent:
+class IngestionPipeline:
     """
-    Agent responsible for document ingestion pipeline.
+    Pipeline responsible for document ingestion workflow.
 
     Handles:
     - Document loading from various formats (PDF, DOCX, TXT)
@@ -35,10 +35,10 @@ class IngestionAgent:
     SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
     def __init__(self):
-        """Initialize the Ingestion Agent with chunker and vector store."""
+        """Initialize the Ingestion Pipeline with chunker and vector store."""
         self.chunker = DocumentChunker()
         self.vector_store = VectorStore()
-        logger.info("IngestionAgent initialized")
+        logger.info("IngestionPipeline initialized")
 
     def load_document(self, file_path: str) -> Dict[str, Any]:
         """

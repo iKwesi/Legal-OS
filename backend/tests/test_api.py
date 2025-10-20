@@ -20,9 +20,9 @@ class TestUploadEndpoint:
         return TestClient(app)
 
     @pytest.fixture
-    def mock_ingestion_agent(self):
-        """Mock IngestionAgent for testing."""
-        with patch("app.api.v1.endpoints.upload.IngestionAgent") as mock:
+    def mock_ingestion_pipeline(self):
+        """Mock IngestionPipeline for testing."""
+        with patch("app.api.v1.endpoints.upload.IngestionPipeline") as mock:
             mock_instance = Mock()
             mock_instance.ingest_documents.return_value = {
                 "session_id": "test-session",
@@ -36,7 +36,7 @@ class TestUploadEndpoint:
             mock.return_value = mock_instance
             yield mock_instance
 
-    def test_upload_success(self, client, mock_ingestion_agent):
+    def test_upload_success(self, client, mock_ingestion_pipeline):
         """Test successful file upload."""
         # Create fake file
         file_content = b"Test document content"
@@ -57,14 +57,14 @@ class TestUploadEndpoint:
 
         assert response.status_code == 422  # FastAPI validation error
 
-    def test_upload_unsupported_format(self, client, mock_ingestion_agent):
+    def test_upload_unsupported_format(self, client, mock_ingestion_pipeline):
         """Test upload with unsupported file format."""
         # Create fake file with unsupported extension
         file_content = b"Test content"
         files = {"files": ("test.xyz", BytesIO(file_content), "application/octet-stream")}
 
         # Mock to return no successful ingestions
-        mock_ingestion_agent.ingest_documents.return_value = {
+        mock_ingestion_pipeline.ingest_documents.return_value = {
             "session_id": "test-session",
             "total_documents": 0,
             "successful": 0,
@@ -80,14 +80,14 @@ class TestUploadEndpoint:
         assert response.status_code == 400
         assert "No valid files" in response.json()["detail"]
 
-    def test_upload_multiple_files(self, client, mock_ingestion_agent):
+    def test_upload_multiple_files(self, client, mock_ingestion_pipeline):
         """Test uploading multiple files."""
         files = [
             ("files", ("test1.txt", BytesIO(b"Content 1"), "text/plain")),
             ("files", ("test2.txt", BytesIO(b"Content 2"), "text/plain")),
         ]
 
-        mock_ingestion_agent.ingest_documents.return_value = {
+        mock_ingestion_pipeline.ingest_documents.return_value = {
             "session_id": "test-session",
             "total_documents": 2,
             "successful": 2,

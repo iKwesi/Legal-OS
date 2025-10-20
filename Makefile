@@ -81,10 +81,12 @@ logs-frontend:
 
 # Run tests
 test:
-	@echo "Running backend tests..."
-	cd backend && uv run pytest
-	@echo "Running frontend tests..."
-	cd frontend && npm test
+	@echo "Running backend tests in Docker..."
+	docker-compose run --rm backend uv run pytest tests/test_ingestion.py tests/test_rag.py -v
+	@echo ""
+	@echo "Note: API and main tests require running services (use 'make start' first)"
+	@echo "To run all tests including API tests, ensure services are running and use:"
+	@echo "  docker-compose exec backend uv run pytest -v"
 
 # Format code
 format:

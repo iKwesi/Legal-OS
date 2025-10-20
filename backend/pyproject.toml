@@ -18,6 +18,7 @@ dependencies = [
     "python-multipart>=0.0.20",
     "qdrant-client>=1.15.1",
     "ragas>=0.3.7",
+    "rapidfuzz>=3.14.1",
     "uvicorn[standard]>=0.38.0",
 ]
 

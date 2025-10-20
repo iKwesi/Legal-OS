@@ -218,7 +218,7 @@ Conceptually, the prototype requires the following main views for the `localhost
     * **Acceptance Criteria:**
         * Script `notebooks/E01_Pipeline_Foundation.py` created (Jupytext format).
         * **Cell 1 (Docs):** Explains purpose.
-        * **Cell 2 (Ingest):** Runs Ingestion Agent on a sample doc from `data/`.
+        * **Cell 2 (Ingest):** Runs Ingestion pipeline on a sample doc from `data/`.
         * **Cell 3 (RAG Test):** Asks a question to RAG (V1) and prints answer.
         * **Cell 4 (SGD):** Runs SGD Generation script and shows sample output from `golden_dataset/sgd_benchmark.csv`.
 

@@ -1,7 +1,18 @@
 """FastAPI application entry point for Legal-OS."""
 
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.api.v1.router import api_router
+from app.core.config import settings
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 app = FastAPI(
     title="Legal-OS API",
@@ -33,3 +44,7 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
+
+
+# Include API v1 router
+app.include_router(api_router, prefix="/api/v1")

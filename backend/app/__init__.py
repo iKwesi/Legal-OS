@@ -1,0 +1,1 @@
+"""Legal-OS Backend Application."""

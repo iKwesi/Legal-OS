@@ -405,9 +405,22 @@ async def get_analysis_results(session_id: str) -> AnalysisReport:
             logger.info(f"Summary type: {type(summary)}, has overview: {hasattr(summary, 'overview')}")
             # Handle different summary formats
             if hasattr(summary, "executive_summary"):
-                # DiligenceMemo format
-                summary_text = summary.executive_summary
-                logger.info("Using DiligenceMemo format")
+                # DiligenceMemo format - but executive_summary might be an object!
+                exec_summary = summary.executive_summary
+                logger.info(f"exec_summary type: {type(exec_summary)}, is string: {isinstance(exec_summary, str)}")
+                if isinstance(exec_summary, str):
+                    summary_text = exec_summary
+                    logger.info("exec_summary is already a string")
+                elif hasattr(exec_summary, "overview"):
+                    # It's an ExecutiveSummary object nested inside DiligenceMemo
+                    overview = exec_summary.overview if hasattr(exec_summary, "overview") else ""
+                    assessment = exec_summary.overall_risk_assessment if hasattr(exec_summary, "overall_risk_assessment") else ""
+                    summary_text = f"{overview}\n\nRisk Assessment: {assessment}"
+                    logger.info(f"Converted ExecutiveSummary to string, length: {len(summary_text)}")
+                else:
+                    summary_text = str(exec_summary)
+                    logger.info("Used str() fallback")
+                logger.info(f"DiligenceMemo format - summary_text type after conversion: {type(summary_text)}")
             elif hasattr(summary, "overview"):
                 # ExecutiveSummary format - convert to string
                 overview = getattr(summary, "overview", "")

@@ -130,7 +130,7 @@ export default function ResultsPage() {
                       clause.risk_level === 'medium' ? 'bg-yellow-100 text-yellow-800' :
                       'bg-green-100 text-green-800'
                     }`}>
-                      {clause.risk_level.charAt(0).toUpperCase() + clause.risk_level.slice(1)} Risk
+                      {clause.risk_level ? (clause.risk_level.charAt(0).toUpperCase() + clause.risk_level.slice(1)) : 'Unknown'} Risk
                     </span>
                   </div>
                 ))}
@@ -147,11 +147,11 @@ export default function ResultsPage() {
                   AI-Generated Summary Report
                 </h1>
                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                  <span>{report.document_name}</span>
+                  <span>{report.document_name || 'Unknown Document'}</span>
                   <span>•</span>
-                  <span>{new Date(report.analysis_date).toLocaleDateString()}</span>
+                  <span>{report.analysis_date ? new Date(report.analysis_date).toLocaleDateString() : 'N/A'}</span>
                   <span>•</span>
-                  <span>Risk Score: {report.overall_risk_score.toFixed(2)}</span>
+                  <span>Risk Score: {report.overall_risk_score?.toFixed(2) ?? 'N/A'}</span>
                 </div>
               </div>
 
@@ -162,7 +162,7 @@ export default function ResultsPage() {
                 </h2>
                 <div className="prose prose-sm max-w-none">
                   <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {report.summary}
+                    {report.summary_memo || report.summary || 'No summary available.'}
                   </p>
                 </div>
               </div>

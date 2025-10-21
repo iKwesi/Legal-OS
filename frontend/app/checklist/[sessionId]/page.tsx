@@ -25,7 +25,7 @@ export default function ChecklistPage() {
       try {
         setIsLoading(true);
         const report = await apiClient.getAnalysisResults(sessionId);
-        setChecklistItems(report.checklist_items || []);
+        setChecklistItems(report.checklist || report.checklist_items || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load checklist');
       } finally {
@@ -40,9 +40,10 @@ export default function ChecklistPage() {
 
   const handleToggle = (id: string) => {
     setChecklistItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item
-      )
+      items.map((item) => {
+        const itemId = item.id || item.item_id;
+        return itemId === id ? { ...item, completed: !item.completed } : item;
+      })
     );
   };
 
@@ -197,7 +198,7 @@ export default function ChecklistPage() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">{category}</h3>
                   <ul className="space-y-4">
                     {items.map((item) => (
-                      <ChecklistItem key={item.id} item={item} onToggle={handleToggle} />
+                      <ChecklistItem key={item.id || item.item_id} item={item} onToggle={handleToggle} />
                     ))}
                   </ul>
                 </div>

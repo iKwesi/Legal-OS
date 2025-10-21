@@ -41,14 +41,20 @@ export default function UploadPage() {
       await apiClient.pollAnalysisStatus(
         uploadResponse.session_id,
         (status) => {
-          // Update progress based on status
-          const progressMap: Record<string, number> = {
-            'pending': 30,
-            'processing': 50,
-            'completed': 100,
-            'failed': 0,
-          };
-          setUploadProgress(progressMap[status.status] || status.progress || 50);
+          // Use actual progress from backend, with fallback based on status
+          if (status.progress !== undefined && status.progress > 0) {
+            // Backend is providing progress - use it!
+            setUploadProgress(Math.max(20, status.progress));
+          } else {
+            // Fallback to status-based progress if backend doesn't provide it
+            const progressMap: Record<string, number> = {
+              'pending': 30,
+              'processing': 50,
+              'completed': 100,
+              'failed': 0,
+            };
+            setUploadProgress(progressMap[status.status] || 50);
+          }
         }
       );
 

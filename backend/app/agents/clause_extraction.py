@@ -56,10 +56,25 @@ class ClauseExtractionAgent:
         self.vector_store = vector_store or VectorStore()
         self.top_k = top_k
         self.llm = ChatOpenAI(model=model_name, temperature=temperature, api_key=settings.openai_api_key)
-        self.retriever = get_naive_retriever(vector_store=self.vector_store, top_k=top_k)
+        self.retriever = None  # Lazy initialization - created when first needed
         self.tools = self._create_tools()
         self.agent_executor = create_react_agent(model=self.llm, tools=self.tools)
-        logger.info(f"ClauseExtractionAgent initialized with create_react_agent")
+        logger.info(f"ClauseExtractionAgent initialized with create_react_agent (lazy retriever)")
+    
+    def _ensure_retriever(self):
+        """
+        Ensure retriever is initialized (lazy initialization pattern).
+        
+        Creates the retriever on first use, allowing the agent to be initialized
+        before the vector store is populated with documents.
+        
+        Returns:
+            Initialized retriever
+        """
+        if self.retriever is None:
+            self.retriever = get_naive_retriever(vector_store=self.vector_store, top_k=self.top_k)
+            logger.info(f"Retriever created lazily with top_k={self.top_k}")
+        return self.retriever
     
     def _create_tools(self) -> List[Tool]:
         return [
@@ -82,7 +97,8 @@ class ClauseExtractionAgent:
     
     def _search_document_tool(self, query: str) -> str:
         try:
-            docs = self.retriever.invoke(query)
+            retriever = self._ensure_retriever()  # Lazy initialization
+            docs = retriever.invoke(query)
             if not docs:
                 return "No relevant documents found."
             results = []

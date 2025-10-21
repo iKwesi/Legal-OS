@@ -7,6 +7,9 @@ interface ChecklistItemProps {
 }
 
 export function ChecklistItem({ item, onToggle }: ChecklistItemProps) {
+  const itemId = item.id || item.item_id || '';
+  const isCompleted = item.completed ?? false;
+
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
       case 'high':
@@ -24,13 +27,13 @@ export function ChecklistItem({ item, onToggle }: ChecklistItemProps) {
     <li className="flex items-start group">
       <input
         type="checkbox"
-        id={item.id}
-        checked={item.completed}
-        onChange={() => onToggle(item.id)}
+        id={itemId}
+        checked={isCompleted}
+        onChange={() => onToggle(itemId)}
         className="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 text-primary focus:ring-primary/50 cursor-pointer"
       />
       <label
-        htmlFor={item.id}
+        htmlFor={itemId}
         className="ml-3 text-sm text-gray-700 peer-checked:line-through peer-checked:text-gray-500 cursor-pointer flex-1"
       >
         {item.text}

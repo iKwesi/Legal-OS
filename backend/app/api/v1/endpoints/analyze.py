@@ -402,19 +402,79 @@ async def get_analysis_results(session_id: str) -> AnalysisReport:
         summary = results.get("summary")
         summary_text = ""
         if summary:
-            # DiligenceMemo has executive_summary field
+            logger.info(f"Summary type: {type(summary)}, has overview: {hasattr(summary, 'overview')}")
+            # Handle different summary formats
             if hasattr(summary, "executive_summary"):
-                summary_text = summary.executive_summary
+                # DiligenceMemo format - but executive_summary might be an object!
+                exec_summary = summary.executive_summary
+                logger.info(f"exec_summary type: {type(exec_summary)}, is string: {isinstance(exec_summary, str)}")
+                if isinstance(exec_summary, str):
+                    summary_text = exec_summary
+                    logger.info("exec_summary is already a string")
+                elif hasattr(exec_summary, "overview"):
+                    # It's an ExecutiveSummary object nested inside DiligenceMemo
+                    overview = exec_summary.overview if hasattr(exec_summary, "overview") else ""
+                    assessment = exec_summary.overall_risk_assessment if hasattr(exec_summary, "overall_risk_assessment") else ""
+                    summary_text = f"{overview}\n\nRisk Assessment: {assessment}"
+                    logger.info(f"Converted ExecutiveSummary to string, length: {len(summary_text)}")
+                else:
+                    summary_text = str(exec_summary)
+                    logger.info("Used str() fallback")
+                logger.info(f"DiligenceMemo format - summary_text type after conversion: {type(summary_text)}")
+            elif hasattr(summary, "overview"):
+                # ExecutiveSummary format - convert to string
+                overview = getattr(summary, "overview", "")
+                assessment = getattr(summary, "assessment", "")
+                summary_text = f"{overview}\n\nRisk Assessment: {assessment}"
+                logger.info(f"Using ExecutiveSummary format, text length: {len(summary_text)}")
             elif isinstance(summary, dict):
-                summary_text = summary.get("executive_summary", "")
+                # Dictionary format
+                if "executive_summary" in summary:
+                    summary_text = summary["executive_summary"]
+                elif "overview" in summary:
+                    overview = summary.get("overview", "")
+                    assessment = summary.get("assessment", "")
+                    summary_text = f"{overview}\n\nRisk Assessment: {assessment}"
+                logger.info("Using dict format")
+            elif isinstance(summary, str):
+                # Already a string
+                summary_text = summary
+                logger.info("Summary already string")
+            else:
+                # Fallback: convert to string
+                summary_text = str(summary)
+                logger.info("Using fallback str() conversion")
         
-        # Extract clauses
+        logger.info(f"Final summary_text type: {type(summary_text)}, is string: {isinstance(summary_text, str)}")
+        
+        # Build risk level mapping from scored_clauses
+        risk_map = {}
+        for scored_clause in results.get("scored_clauses", []):
+            if hasattr(scored_clause, "clause") and hasattr(scored_clause, "risk_score"):
+                clause_text = scored_clause.clause.clause_text
+                risk_score_obj = scored_clause.risk_score
+                risk_map[clause_text] = {
+                    "risk_level": risk_score_obj.category.lower() if hasattr(risk_score_obj, "category") else "medium",
+                    "risk_score": risk_score_obj.score if hasattr(risk_score_obj, "score") else 50
+                }
+        
+        # Extract clauses and enrich with risk data
         extracted_clauses = []
         for clause in results.get("extracted_clauses", []):
             if hasattr(clause, "model_dump"):
-                extracted_clauses.append(clause.model_dump())
+                clause_dict = clause.model_dump()
             elif isinstance(clause, dict):
-                extracted_clauses.append(clause)
+                clause_dict = clause.copy()
+            else:
+                continue
+            
+            # Add risk data if available
+            clause_text = clause_dict.get("clause_text", "")
+            if clause_text in risk_map:
+                clause_dict["risk_level"] = risk_map[clause_text]["risk_level"]
+                clause_dict["risk_score"] = risk_map[clause_text]["risk_score"]
+            
+            extracted_clauses.append(clause_dict)
         
         # Build red flags from scored clauses
         red_flags = []

@@ -17,6 +17,7 @@ from langchain_core.documents import Document
 from app.core.config import settings
 from app.rag.chunking import DocumentChunker, get_chunker
 from app.rag.vector_store import VectorStore
+from app.rag.shared import get_shared_vector_store
 
 logger = logging.getLogger(__name__)
 
@@ -44,14 +45,15 @@ class IngestionPipeline:
         Initialize the Ingestion Pipeline.
         
         Args:
-            vector_store: Optional VectorStore instance (creates new if not provided)
+            vector_store: Optional VectorStore instance (uses shared if not provided)
             chunker: Optional DocumentChunker instance (creates new if not provided)
-            use_memory: If True and vector_store not provided, creates in-memory vector store.
+            use_memory: If True and vector_store not provided, uses shared in-memory vector store.
                        Defaults to True for simpler development. Set to False for production.
         """
         self.chunker = chunker or get_chunker(strategy="semantic")  # Use semantic by default based on evaluation
-        self.vector_store = vector_store or VectorStore(use_memory=use_memory)
-        logger.info(f"IngestionPipeline initialized (use_memory={use_memory})")
+        # Use shared vector store to ensure consistency across ingestion and query
+        self.vector_store = vector_store or get_shared_vector_store()
+        logger.info(f"IngestionPipeline initialized with shared vector store")
 
     def load_document(self, file_path: str) -> Dict[str, Any]:
         """

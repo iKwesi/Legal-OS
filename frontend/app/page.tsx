@@ -29,22 +29,39 @@ export default function UploadPage() {
     setUploadProgress(0);
 
     try {
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => Math.min(prev + 10, 90));
-      }, 200);
-
-      const response = await apiClient.uploadDocument(selectedFile);
+      // Step 1: Upload document
+      setUploadProgress(10);
+      const uploadResponse = await apiClient.uploadDocument(selectedFile);
       
-      clearInterval(progressInterval);
-      setUploadProgress(100);
+      // Step 2: Trigger analysis
+      setUploadProgress(20);
+      await apiClient.triggerAnalysis(uploadResponse.session_id);
+      
+      // Step 3: Poll for status with progress updates
+      await apiClient.pollAnalysisStatus(
+        uploadResponse.session_id,
+        (status) => {
+          // Use actual progress from backend, with fallback based on status
+          if (status.progress !== undefined && status.progress > 0) {
+            // Backend is providing progress - use it!
+            setUploadProgress(Math.max(20, status.progress));
+          } else {
+            // Fallback to status-based progress if backend doesn't provide it
+            const progressMap: Record<string, number> = {
+              'pending': 30,
+              'processing': 50,
+              'completed': 100,
+              'failed': 0,
+            };
+            setUploadProgress(progressMap[status.status] || 50);
+          }
+        }
+      );
 
-      // Navigate to results page after short delay
-      setTimeout(() => {
-        router.push(`/results/${response.session_id}`);
-      }, 500);
+      // Navigate to results page
+      router.push(`/results/${uploadResponse.session_id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload document');
+      setError(err instanceof Error ? err.message : 'Failed to upload and analyze document');
       setIsUploading(false);
       setUploadProgress(0);
     }

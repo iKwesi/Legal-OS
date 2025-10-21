@@ -33,15 +33,19 @@ export function ClauseCard({ clause }: ClauseCardProps) {
     }
   };
 
+  const riskLevel = clause.risk_level || 'medium';
+  const riskScore = clause.risk_score || 0;
+  const clauseText = clause.text || clause.clause_text || 'No text available';
+
   return (
-    <Card className={`p-4 border-l-4 ${getRiskColor(clause.risk_level)}`}>
+    <Card className={`p-4 border-l-4 ${getRiskColor(riskLevel)}`}>
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-semibold text-gray-900">{clause.clause_type}</h4>
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRiskBadgeColor(clause.risk_level)}`}>
-          {clause.risk_level.charAt(0).toUpperCase() + clause.risk_level.slice(1)} Risk
+        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRiskBadgeColor(riskLevel)}`}>
+          {riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)} Risk
         </span>
       </div>
-      <p className="text-sm text-gray-700 leading-relaxed mb-2">{clause.text}</p>
+      <p className="text-sm text-gray-700 leading-relaxed mb-2">{clauseText}</p>
       <div className="flex items-center gap-4 text-xs text-gray-500">
         {clause.page_number && (
           <span>Page {clause.page_number}</span>
@@ -49,7 +53,7 @@ export function ClauseCard({ clause }: ClauseCardProps) {
         {clause.confidence && (
           <span>Confidence: {Math.round(clause.confidence * 100)}%</span>
         )}
-        <span>Risk Score: {clause.risk_score.toFixed(2)}</span>
+        <span>Risk Score: {riskScore.toFixed(2)}</span>
       </div>
     </Card>
   );

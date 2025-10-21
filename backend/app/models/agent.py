@@ -166,3 +166,187 @@ class ClauseExtractionResult(BaseModel):
             ]
         }
     }
+
+
+# Risk Scoring Models
+
+class RiskFactor(BaseModel):
+    """
+    Represents an individual risk factor identified in a clause.
+    
+    Attributes:
+        factor_name: Name of the risk factor
+        description: Description of why this is a risk
+        score_impact: Numerical impact on risk score (0-100)
+        detected: Whether this factor was detected in the clause
+    """
+    factor_name: str = Field(
+        description="Name of the risk factor (e.g., 'unlimited_liability', 'short_survival_period')"
+    )
+    description: str = Field(
+        description="Explanation of why this factor represents a risk"
+    )
+    score_impact: int = Field(
+        ge=0,
+        le=100,
+        description="Impact on risk score if this factor is present (0-100)"
+    )
+    detected: bool = Field(
+        default=False,
+        description="Whether this risk factor was detected in the clause"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "factor_name": "unlimited_liability",
+                    "description": "No cap on indemnification liability",
+                    "score_impact": 50,
+                    "detected": True
+                }
+            ]
+        }
+    }
+
+
+class RiskScore(BaseModel):
+    """
+    Complete risk assessment for a clause.
+    
+    Attributes:
+        score: Numerical risk score (0-100)
+        category: Risk category (Low, Medium, High, Critical)
+        factors: List of risk factors that contributed to the score
+        justification: Explanation of the risk score
+    """
+    score: int = Field(
+        ge=0,
+        le=100,
+        description="Numerical risk score (0-100)"
+    )
+    category: Literal["Low", "Medium", "High", "Critical"] = Field(
+        description="Risk category based on score: Low (0-25), Medium (26-50), High (51-75), Critical (76-100)"
+    )
+    factors: List[RiskFactor] = Field(
+        default_factory=list,
+        description="List of risk factors that contributed to this score"
+    )
+    justification: str = Field(
+        description="Detailed explanation of why this risk score was assigned"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "score": 75,
+                    "category": "High",
+                    "factors": [
+                        {
+                            "factor_name": "unlimited_liability",
+                            "description": "No cap on indemnification",
+                            "score_impact": 50,
+                            "detected": True
+                        }
+                    ],
+                    "justification": "High risk due to unlimited indemnification liability without any cap"
+                }
+            ]
+        }
+    }
+
+
+class ScoredClause(BaseModel):
+    """
+    An extracted clause enriched with risk scoring information.
+    
+    Attributes:
+        clause: The original extracted clause
+        risk_score: The risk assessment for this clause
+    """
+    clause: ExtractedClause = Field(
+        description="The original extracted clause"
+    )
+    risk_score: RiskScore = Field(
+        description="Risk assessment for this clause"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "clause": {
+                        "clause_text": "Seller shall indemnify Buyer for all losses.",
+                        "clause_type": "indemnification",
+                        "location": {"page": 8},
+                        "confidence": 0.9,
+                        "source_chunk_ids": ["chunk_200"]
+                    },
+                    "risk_score": {
+                        "score": 75,
+                        "category": "High",
+                        "factors": [],
+                        "justification": "Unlimited indemnification without cap"
+                    }
+                }
+            ]
+        }
+    }
+
+
+class RiskScoringResult(BaseModel):
+    """
+    Complete result from the risk scoring agent.
+    
+    Attributes:
+        scored_clauses: List of clauses with risk scores
+        overall_risk_score: Overall document risk score (0-100)
+        overall_risk_category: Overall risk category
+        metadata: Additional metadata about the scoring process
+        timestamp: When the scoring was performed
+        document_id: ID of the document that was analyzed
+    """
+    scored_clauses: List[ScoredClause] = Field(
+        default_factory=list,
+        description="List of all clauses with their risk scores"
+    )
+    overall_risk_score: int = Field(
+        ge=0,
+        le=100,
+        description="Overall document risk score (0-100), calculated as average of clause scores"
+    )
+    overall_risk_category: Literal["Low", "Medium", "High", "Critical"] = Field(
+        description="Overall risk category based on overall_risk_score"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional metadata (e.g., processing time, model used)"
+    )
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow,
+        description="Timestamp when the scoring was performed"
+    )
+    document_id: Optional[str] = Field(
+        default=None,
+        description="ID of the document that was analyzed"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "scored_clauses": [],
+                    "overall_risk_score": 65,
+                    "overall_risk_category": "High",
+                    "metadata": {
+                        "processing_time_seconds": 8.5,
+                        "model": "gpt-4o-mini",
+                        "total_clauses_scored": 5
+                    },
+                    "timestamp": "2025-10-21T00:00:00Z",
+                    "document_id": "doc_abc123"
+                }
+            ]
+        }
+    }

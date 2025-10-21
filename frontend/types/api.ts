@@ -2,7 +2,7 @@
 
 export interface UploadResponse {
   session_id: string;
-  filename: string;
+  file_names: string[];
   message: string;
 }
 
@@ -42,6 +42,20 @@ export interface AnalysisReport {
   red_flags: RedFlag[];
   overall_risk_score: number;
   checklist_items: ChecklistItem[];
+}
+
+export interface AnalyzeRequest {
+  session_id: string;
+}
+
+export interface AnalyzeResponse {
+  status_url: string;
+}
+
+export interface StatusResponse {
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  message?: string;
 }
 
 export interface ApiError {

@@ -24,7 +24,7 @@ export default function ChecklistPage() {
     const fetchChecklist = async () => {
       try {
         setIsLoading(true);
-        const report = await apiClient.getAnalysisReport(sessionId);
+        const report = await apiClient.getAnalysisResults(sessionId);
         setChecklistItems(report.checklist_items || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load checklist');
@@ -109,6 +109,38 @@ export default function ChecklistPage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <Header />
+
+      <div className="border-b border-gray-200 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <nav className="flex items-center gap-8 text-sm font-medium">
+              <Link
+                href={`/results/${sessionId}`}
+                className="text-gray-600 hover:text-primary transition-colors pb-3"
+              >
+                Summary
+              </Link>
+              <Link
+                href={`/chat/${sessionId}`}
+                className="text-gray-600 hover:text-primary transition-colors pb-3"
+              >
+                Chat
+              </Link>
+              <span className="text-primary border-b-2 border-primary pb-3">Checklist</span>
+            </nav>
+            <Button
+              onClick={() => router.push('/')}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Analysis
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="max-w-4xl mx-auto">

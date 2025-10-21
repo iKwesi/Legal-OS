@@ -25,7 +25,7 @@ export default function ResultsPage() {
     const fetchReport = async () => {
       try {
         setIsLoading(true);
-        const data = await apiClient.getAnalysisReport(sessionId);
+        const data = await apiClient.getAnalysisResults(sessionId);
         setReport(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load analysis report');
@@ -83,6 +83,12 @@ export default function ResultsPage() {
           <div className="flex items-center justify-between h-14">
             <nav className="flex items-center gap-8 text-sm font-medium">
               <span className="text-primary border-b-2 border-primary pb-3">Summary</span>
+              <Link
+                href={`/chat/${sessionId}`}
+                className="text-gray-600 hover:text-primary transition-colors pb-3"
+              >
+                Chat
+              </Link>
               <Link
                 href={`/checklist/${sessionId}`}
                 className="text-gray-600 hover:text-primary transition-colors pb-3"

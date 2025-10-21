@@ -402,11 +402,37 @@ async def get_analysis_results(session_id: str) -> AnalysisReport:
         summary = results.get("summary")
         summary_text = ""
         if summary:
-            # DiligenceMemo has executive_summary field
+            logger.info(f"Summary type: {type(summary)}, has overview: {hasattr(summary, 'overview')}")
+            # Handle different summary formats
             if hasattr(summary, "executive_summary"):
+                # DiligenceMemo format
                 summary_text = summary.executive_summary
+                logger.info("Using DiligenceMemo format")
+            elif hasattr(summary, "overview"):
+                # ExecutiveSummary format - convert to string
+                overview = getattr(summary, "overview", "")
+                assessment = getattr(summary, "assessment", "")
+                summary_text = f"{overview}\n\nRisk Assessment: {assessment}"
+                logger.info(f"Using ExecutiveSummary format, text length: {len(summary_text)}")
             elif isinstance(summary, dict):
-                summary_text = summary.get("executive_summary", "")
+                # Dictionary format
+                if "executive_summary" in summary:
+                    summary_text = summary["executive_summary"]
+                elif "overview" in summary:
+                    overview = summary.get("overview", "")
+                    assessment = summary.get("assessment", "")
+                    summary_text = f"{overview}\n\nRisk Assessment: {assessment}"
+                logger.info("Using dict format")
+            elif isinstance(summary, str):
+                # Already a string
+                summary_text = summary
+                logger.info("Summary already string")
+            else:
+                # Fallback: convert to string
+                summary_text = str(summary)
+                logger.info("Using fallback str() conversion")
+        
+        logger.info(f"Final summary_text type: {type(summary_text)}, is string: {isinstance(summary_text, str)}")
         
         # Extract clauses
         extracted_clauses = []

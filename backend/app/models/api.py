@@ -2,9 +2,11 @@
 API request/response Pydantic models.
 """
 
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field
 from fastapi import UploadFile
+
+from app.models.retriever import RetrieverConfig
 
 
 class Upload(BaseModel):
@@ -27,15 +29,19 @@ class UploadResponse(BaseModel):
 
 
 class QueryRequest(BaseModel):
-    """Request model for RAG query."""
+    """Request model for RAG query with optional retriever configuration."""
 
     session_id: str = Field(..., description="Session identifier for document context")
     query: str = Field(..., description="User question or query")
     top_k: int = Field(
         default=5,
-        description="Number of chunks to retrieve",
+        description="Number of chunks to retrieve (deprecated: use retriever_config.top_k instead)",
         ge=1,
         le=20,
+    )
+    retriever_config: Optional[RetrieverConfig] = Field(
+        default=None,
+        description="Optional retriever configuration for swappable retrieval strategies"
     )
 
 

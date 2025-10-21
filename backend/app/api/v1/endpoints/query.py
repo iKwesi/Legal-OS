@@ -1,5 +1,5 @@
 """
-Query endpoint for RAG question answering.
+Query endpoint for RAG question answering with swappable retriever support.
 """
 
 import logging
@@ -8,42 +8,85 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.models.api import QueryRequest, QueryResponse
 from app.rag.pipeline import RAGPipeline
+from app.rag.vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Initialize RAG pipeline (singleton for the endpoint)
-rag_pipeline = RAGPipeline()
+# Initialize default RAG pipeline (singleton for the endpoint)
+# This will be used when no retriever_config is provided
+_default_rag_pipeline = RAGPipeline()
+
+# Initialize vector store for creating pipelines with custom retrievers
+_vector_store = VectorStore()
 
 
 @router.post("/query", response_model=QueryResponse)
 async def query_documents(request: QueryRequest) -> QueryResponse:
     """
-    Query documents using RAG.
+    Query documents using RAG with optional retriever configuration.
 
-    This endpoint:
-    1. Receives a user question and session ID
-    2. Retrieves relevant chunks from the vector store
-    3. Generates an answer using the LLM
-    4. Returns the answer with sources
+    This endpoint supports swappable retriever strategies:
+    1. Receives a user question, session ID, and optional retriever configuration
+    2. Creates a RAG pipeline with the specified retriever (or uses default)
+    3. Retrieves relevant chunks from the vector store
+    4. Generates an answer using the LLM
+    5. Returns the answer with sources
 
     Args:
-        request: QueryRequest with session_id, query, and optional top_k
+        request: QueryRequest with session_id, query, optional top_k, and optional retriever_config
 
     Returns:
         QueryResponse with answer, sources, and metadata
 
     Raises:
         HTTPException: If query processing fails
+        
+    Examples:
+        Default (naive) retriever:
+        ```json
+        {
+            "session_id": "session123",
+            "query": "What are the payment terms?"
+        }
+        ```
+        
+        Custom BM25 retriever:
+        ```json
+        {
+            "session_id": "session123",
+            "query": "What are the payment terms?",
+            "retriever_config": {
+                "retriever_type": "bm25",
+                "top_k": 10,
+                "params": {"k1": 1.5, "b": 0.75}
+            }
+        }
+        ```
     """
     try:
         logger.info(
             f"Processing query for session {request.session_id}: {request.query[:100]}..."
         )
 
+        # Determine which pipeline to use
+        if request.retriever_config:
+            # Create a new pipeline with the specified retriever configuration
+            logger.info(
+                f"Using custom retriever: {request.retriever_config.get_description()}"
+            )
+            pipeline = RAGPipeline(
+                retriever_config=request.retriever_config,
+                vector_store=_vector_store,
+            )
+        else:
+            # Use default pipeline
+            logger.info("Using default naive retriever")
+            pipeline = _default_rag_pipeline
+
         # Execute RAG query
-        result = rag_pipeline.query(
+        result = pipeline.query(
             question=request.query,
             session_id=request.session_id,
             top_k=request.top_k,

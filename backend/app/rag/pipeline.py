@@ -1,15 +1,21 @@
 """
-RAG (Retrieval-Augmented Generation) pipeline implementation.
+RAG (Retrieval-Augmented Generation) pipeline using LangChain patterns.
+
+This module provides a flexible RAG pipeline that supports swappable retrievers
+through configuration-driven selection.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
+from operator import itemgetter
 
 from app.core.config import settings
-from app.rag.retrievers import NaiveRetriever
+from app.models.retriever import RetrieverConfig
+from app.rag.retrievers import get_retriever
 from app.rag.vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
@@ -17,10 +23,10 @@ logger = logging.getLogger(__name__)
 
 class RAGPipeline:
     """
-    RAG pipeline for question answering over documents.
-
-    Combines retrieval and generation to answer questions based on
-    document context.
+    RAG pipeline for question answering over documents using LangChain patterns.
+    
+    Combines retrieval and generation using LangChain's retrieval chain pattern
+    for better performance and compatibility.
     """
 
     # Default RAG prompt template
@@ -35,20 +41,73 @@ Please provide a clear, accurate answer based on the context above. If the conte
 
     def __init__(
         self,
-        retriever: Optional[NaiveRetriever] = None,
+        retriever: Optional[Any] = None,
+        retriever_config: Optional[RetrieverConfig] = None,
+        vector_store: Optional[VectorStore] = None,
         llm: Optional[ChatOpenAI] = None,
         prompt_template: Optional[str] = None,
     ):
         """
-        Initialize the RAG pipeline.
+        Initialize the RAG pipeline with swappable retriever support.
 
         Args:
-            retriever: Optional retriever instance (creates new if not provided)
+            retriever: LangChain retriever instance (legacy support)
+            retriever_config: Configuration for retriever selection (new approach)
+            vector_store: VectorStore instance (required if using retriever_config)
             llm: Optional LLM instance (creates new if not provided)
             prompt_template: Optional custom prompt template
+            
+        Note:
+            Either provide a retriever directly OR provide retriever_config + vector_store.
+            If both are provided, retriever takes precedence for backward compatibility.
         """
-        # Initialize retriever
-        self.retriever = retriever or NaiveRetriever()
+        # Handle retriever initialization
+        if retriever is not None:
+            # Legacy mode: use provided retriever directly
+            self.retriever = retriever
+            self.retriever_config = None
+            logger.info("RAGPipeline initialized with provided retriever (legacy mode)")
+        elif retriever_config is not None:
+            # New mode: create retriever from config
+            if not vector_store:
+                raise ValueError("vector_store is required when using retriever_config")
+            
+            self.retriever_config = retriever_config
+            self.vector_store = vector_store
+            
+            # Create retriever based on config
+            if retriever_config.retriever_type == "naive":
+                self.retriever = get_retriever(
+                    retriever_type="naive",
+                    vector_store=vector_store,
+                    top_k=retriever_config.top_k,
+                    **retriever_config.params
+                )
+            elif retriever_config.retriever_type == "bm25":
+                # For BM25, we need to get all documents from vector store
+                documents = vector_store.get_all_documents()
+                self.retriever = get_retriever(
+                    retriever_type="bm25",
+                    documents=documents,
+                    top_k=retriever_config.top_k,
+                    **retriever_config.params
+                )
+            else:
+                raise ValueError(f"Unknown retriever type: {retriever_config.retriever_type}")
+            
+            logger.info(
+                f"RAGPipeline initialized with {retriever_config.get_description()}"
+            )
+        else:
+            # Default: create naive retriever with default vector store
+            self.vector_store = vector_store or VectorStore()
+            self.retriever_config = RetrieverConfig(retriever_type="naive", top_k=10)
+            self.retriever = get_retriever(
+                retriever_type="naive",
+                vector_store=self.vector_store,
+                top_k=10
+            )
+            logger.info("RAGPipeline initialized with default naive retriever")
 
         # Initialize LLM
         self.llm = llm or ChatOpenAI(
@@ -61,6 +120,13 @@ Please provide a clear, accurate answer based on the context above. If the conte
         # Set up prompt template
         template = prompt_template or self.DEFAULT_PROMPT_TEMPLATE
         self.prompt = ChatPromptTemplate.from_template(template)
+        
+        # Build retrieval chain using LangChain pattern
+        self.rag_chain = (
+            {"context": itemgetter("question") | self.retriever, "question": itemgetter("question")}
+            | RunnablePassthrough.assign(context=itemgetter("context"))
+            | {"response": self.prompt | self.llm, "context": itemgetter("context")}
+        )
 
         logger.info(
             f"RAGPipeline initialized with model={settings.llm_model}, "
@@ -78,8 +144,8 @@ Please provide a clear, accurate answer based on the context above. If the conte
 
         Args:
             question: User's question
-            session_id: Optional session ID to filter document context
-            top_k: Number of chunks to retrieve (defaults to settings.retrieval_top_k)
+            session_id: Optional session ID (not used in current implementation)
+            top_k: Optional top_k (not used - set during retriever creation)
 
         Returns:
             Dictionary with answer, sources, and metadata
@@ -87,14 +153,16 @@ Please provide a clear, accurate answer based on the context above. If the conte
         try:
             logger.info(f"Processing RAG query: {question[:100]}...")
 
-            # Step 1: Retrieve relevant chunks
-            retrieved_chunks = self.retriever.retrieve(
-                query=question,
-                session_id=session_id,
-                top_k=top_k,
-            )
-
-            if not retrieved_chunks:
+            # Invoke the RAG chain
+            result = self.rag_chain.invoke({"question": question})
+            
+            # Extract answer
+            answer = result["response"].content if hasattr(result["response"], "content") else str(result["response"])
+            
+            # Extract context documents
+            context_docs = result["context"]
+            
+            if not context_docs:
                 logger.warning("No relevant chunks found for query")
                 return {
                     "answer": "I couldn't find any relevant information in the documents to answer your question.",
@@ -105,42 +173,26 @@ Please provide a clear, accurate answer based on the context above. If the conte
                     },
                 }
 
-            # Step 2: Format context
-            context = self.retriever.format_context(retrieved_chunks)
-
-            # Step 3: Generate answer using LLM
-            logger.info(f"Generating answer using {settings.llm_model}")
-
-            # Create the prompt
-            messages = self.prompt.format_messages(
-                context=context,
-                question=question,
-            )
-
-            # Get LLM response
-            response = self.llm.invoke(messages)
-            answer = response.content
-
-            # Step 4: Extract sources
+            # Format sources
             sources = [
                 {
-                    "text": chunk.get("text", "")[:200] + "...",  # Truncate for brevity
-                    "score": chunk.get("score", 0.0),
-                    "source": chunk.get("metadata", {}).get("file_name", "Unknown"),
-                    "chunk_index": chunk.get("chunk_index", 0),
+                    "text": doc.page_content[:200] + "...",  # Truncate for brevity
+                    "score": 1.0 - (idx / max(len(context_docs), 1)),  # Rank-based score
+                    "source": doc.metadata.get("file_name", "Unknown"),
+                    "chunk_index": doc.metadata.get("chunk_index", idx),
                 }
-                for chunk in retrieved_chunks
+                for idx, doc in enumerate(context_docs)
             ]
 
             logger.info(
-                f"Successfully generated answer using {len(retrieved_chunks)} chunks"
+                f"Successfully generated answer using {len(context_docs)} chunks"
             )
 
             return {
                 "answer": answer,
                 "sources": sources,
                 "metadata": {
-                    "chunks_retrieved": len(retrieved_chunks),
+                    "chunks_retrieved": len(context_docs),
                     "model": settings.llm_model,
                     "temperature": settings.llm_temperature,
                 },

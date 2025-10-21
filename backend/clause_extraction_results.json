@@ -1,0 +1,68 @@
+{
+  "document_id": "55acff8d-4068-41ea-a470-be0fb119ba46",
+  "timestamp": "2025-10-21T06:05:40.413800",
+  "clauses": [
+    {
+      "clause_type": "Payment Terms",
+      "clause_text": "Payment and pay to Seller such amount, if any, provided however, that if Buyer does not deliver such notice and pay such amount within the foregoing time period, Seller shall provide written notice to Buyer of same, and Buyer shall be able to cure within (5) days after receipt of such notice.",
+      "confidence": 0.9,
+      "location": {}
+    },
+    {
+      "clause_type": "Indemnification",
+      "clause_text": "Any Seller Indemnified Party or Buyer Indemnified Party (each, an \"Indemnified Party\") seeking indemnification hereunder shall give to the Party obligated to provide indemnification hereunder (the \"Indemnitor\") written notice of any claim or matter that gives rise to a right of indemnification hereunder.",
+      "confidence": 0.95,
+      "location": {}
+    },
+    {
+      "clause_type": "Warranties",
+      "clause_text": "After the Closing, except for remedies that cannot be waived as a matter of law, the enforcement of the indemnification provisions of Article X shall be the exclusive remedy, other than in the case of fraud of the Parties, for any breach of any warranty, representation, covenant or agreement.",
+      "confidence": 0.9,
+      "location": {}
+    }
+  ],
+  "red_flags": [
+    {
+      "severity": "High",
+      "description": "Vague payment terms due to the conditional nature of payment and the lack of clarity on the specific amount owed.",
+      "category": "High",
+      "recommendation": "Clarify the payment terms by specifying the amount and conditions under which it is payable to avoid ambiguity.",
+      "clause_reference": "Payment and pay to Seller such amount, if any, provided however, that if Buyer does not deliver such notice and pay such amount within the foregoing time period, Seller shall provide written notice to Buyer of same, and Buyer shall be able to cure within (5) days after receipt of such notice."
+    },
+    {
+      "severity": "Medium",
+      "description": "The clause requires written notice for indemnification claims, but it does not specify a timeframe for providing such notice, which could lead to disputes over timeliness.",
+      "category": "ambiguous termination conditions",
+      "recommendation": "Specify a reasonable timeframe within which the Indemnified Party must provide written notice of claims to the Indemnitor.",
+      "clause_reference": "Indemnification Clause"
+    },
+    {
+      "severity": "Critical",
+      "description": "The clause limits remedies to indemnification provisions and excludes other potential remedies, which could be a red flag if it restricts the ability to seek recourse for breaches beyond what is specified.",
+      "category": "Critical",
+      "recommendation": "Consider negotiating for additional remedies beyond indemnification, especially for breaches that may not fall under the defined indemnification provisions.",
+      "clause_reference": "Indemnification provisions of Article X"
+    },
+    {
+      "severity": "High",
+      "description": "The clause states that the enforcement of indemnification provisions shall be the exclusive remedy, which may limit the parties' ability to pursue other legal avenues.",
+      "category": "High",
+      "recommendation": "Review the implications of exclusivity in remedies and negotiate for the inclusion of other remedies or exceptions to ensure adequate protection.",
+      "clause_reference": "Indemnification provisions of Article X"
+    },
+    {
+      "severity": "Medium",
+      "description": "The clause does not specify the duration or conditions under which the indemnification provisions apply, which could lead to ambiguity in enforcement.",
+      "category": "Medium",
+      "recommendation": "Clarify the duration and specific conditions under which indemnification claims can be made to avoid potential disputes.",
+      "clause_reference": "Indemnification provisions of Article X"
+    }
+  ],
+  "metadata": {
+    "processing_time_seconds": 41.780438,
+    "model": "gpt-4o-mini",
+    "total_messages": 14,
+    "retriever_type": "naive",
+    "top_k": 10
+  }
+}

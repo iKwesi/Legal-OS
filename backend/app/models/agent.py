@@ -10,6 +10,215 @@ from datetime import datetime, UTC
 from pydantic import BaseModel, Field
 
 
+# Source Tracking Models
+
+class SourceReference(BaseModel):
+    """
+    Reference to a specific source location in a document.
+    
+    Attributes:
+        document_id: Unique identifier for the source document
+        page: Page number in the original document (if applicable)
+        section: Section or heading in the document
+        chunk_id: Specific chunk identifier from vector store
+        text_snippet: Short excerpt showing the source text
+        confidence: Confidence score for the source attribution (0.0 to 1.0)
+    """
+    document_id: str = Field(
+        description="Unique identifier for the source document"
+    )
+    page: Optional[int] = Field(
+        default=None,
+        description="Page number in the original document"
+    )
+    section: Optional[str] = Field(
+        default=None,
+        description="Section or heading in the document"
+    )
+    chunk_id: str = Field(
+        description="Specific chunk identifier from vector store"
+    )
+    text_snippet: str = Field(
+        description="Short excerpt (100-200 chars) showing the source text"
+    )
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+        default=1.0,
+        description="Confidence score for the source attribution (0.0 to 1.0)"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "document_id": "doc_abc123",
+                    "page": 5,
+                    "section": "Section 2.1 - Purchase Price",
+                    "chunk_id": "chunk_123",
+                    "text_snippet": "The purchase price shall be $10,000,000 payable in cash at closing.",
+                    "confidence": 0.95
+                }
+            ]
+        }
+    }
+
+
+class SourceMetadata(BaseModel):
+    """
+    Complete provenance information for an item.
+    
+    Attributes:
+        sources: List of source references supporting this item
+        confidence: Overall confidence score (0.0 to 1.0)
+        extraction_method: Method used to extract/generate this item
+        timestamp: When this provenance was recorded
+    """
+    sources: List[SourceReference] = Field(
+        default_factory=list,
+        description="List of source references supporting this item"
+    )
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+        default=1.0,
+        description="Overall confidence score for this item (0.0 to 1.0)"
+    )
+    extraction_method: str = Field(
+        default="llm_extraction",
+        description="Method used to extract/generate this item (e.g., 'llm_extraction', 'rule_based', 'aggregation')"
+    )
+    timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        description="When this provenance was recorded"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "sources": [
+                        {
+                            "document_id": "doc_abc123",
+                            "page": 5,
+                            "section": "Section 2.1",
+                            "chunk_id": "chunk_123",
+                            "text_snippet": "The purchase price shall be $10,000,000...",
+                            "confidence": 0.95
+                        }
+                    ],
+                    "confidence": 0.95,
+                    "extraction_method": "llm_extraction",
+                    "timestamp": "2025-10-21T00:00:00Z"
+                }
+            ]
+        }
+    }
+
+
+class SourceLink(BaseModel):
+    """
+    Frontend-renderable link to a source.
+    
+    Attributes:
+        link_id: Unique identifier for this link
+        link_text: Display text for the link
+        link_url: URL or reference to navigate to the source
+        tooltip: Tooltip text with additional context
+        document_id: ID of the source document
+        page: Page number (if applicable)
+        section: Section reference (if applicable)
+    """
+    link_id: str = Field(
+        description="Unique identifier for this link"
+    )
+    link_text: str = Field(
+        description="Display text for the link (e.g., 'Section 2.1, Page 5')"
+    )
+    link_url: str = Field(
+        description="URL or reference to navigate to the source"
+    )
+    tooltip: str = Field(
+        description="Tooltip text with additional context (e.g., text snippet)"
+    )
+    document_id: str = Field(
+        description="ID of the source document"
+    )
+    page: Optional[int] = Field(
+        default=None,
+        description="Page number in the document"
+    )
+    section: Optional[str] = Field(
+        default=None,
+        description="Section reference"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "link_id": "link_abc123",
+                    "link_text": "Section 2.1, Page 5",
+                    "link_url": "/documents/doc_abc123#page=5&section=2.1",
+                    "tooltip": "The purchase price shall be $10,000,000...",
+                    "document_id": "doc_abc123",
+                    "page": 5,
+                    "section": "Section 2.1"
+                }
+            ]
+        }
+    }
+
+
+class SourcedItem(BaseModel):
+    """
+    Generic item with attached provenance metadata.
+    
+    Attributes:
+        content: The actual content/data of the item
+        provenance: Provenance metadata for this item
+        item_type: Type of item (e.g., 'clause', 'finding', 'recommendation')
+    """
+    content: Dict[str, Any] = Field(
+        description="The actual content/data of the item"
+    )
+    provenance: SourceMetadata = Field(
+        description="Provenance metadata for this item"
+    )
+    item_type: str = Field(
+        description="Type of item (e.g., 'clause', 'finding', 'recommendation')"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "content": {
+                        "clause_text": "The purchase price shall be $10,000,000.",
+                        "clause_type": "payment_terms"
+                    },
+                    "provenance": {
+                        "sources": [
+                            {
+                                "document_id": "doc_abc123",
+                                "page": 5,
+                                "section": "Section 2.1",
+                                "chunk_id": "chunk_123",
+                                "text_snippet": "The purchase price shall be $10,000,000...",
+                                "confidence": 0.95
+                            }
+                        ],
+                        "confidence": 0.95,
+                        "extraction_method": "llm_extraction",
+                        "timestamp": "2025-10-21T00:00:00Z"
+                    },
+                    "item_type": "clause"
+                }
+            ]
+        }
+    }
+
+
 # Clause Extraction Models
 
 class ExtractedClause(BaseModel):
@@ -22,6 +231,7 @@ class ExtractedClause(BaseModel):
         location: Location metadata (page, section, etc.)
         confidence: Confidence score for the extraction (0.0 to 1.0)
         source_chunk_ids: IDs of document chunks this clause was extracted from
+        provenance: Provenance metadata for this clause
     """
     clause_text: str = Field(
         description="The actual text content of the extracted clause"
@@ -41,6 +251,10 @@ class ExtractedClause(BaseModel):
     source_chunk_ids: List[str] = Field(
         default_factory=list,
         description="List of chunk IDs from which this clause was extracted"
+    )
+    provenance: Optional[SourceMetadata] = Field(
+        default=None,
+        description="Provenance metadata for this clause"
     )
     
     model_config = {
@@ -68,6 +282,7 @@ class RedFlag(BaseModel):
         clause_reference: Reference to the related clause (if any)
         recommendation: Suggested action or mitigation
         category: Category of the red flag (e.g., 'missing_protection', 'unfavorable_terms')
+        provenance: Provenance metadata for this red flag
     """
     description: str = Field(
         description="Detailed description of the red flag or issue"
@@ -84,6 +299,10 @@ class RedFlag(BaseModel):
     )
     category: str = Field(
         description="Category of the red flag (e.g., 'missing_protection', 'unfavorable_terms', 'ambiguous_language')"
+    )
+    provenance: Optional[SourceMetadata] = Field(
+        default=None,
+        description="Provenance metadata for this red flag"
     )
     
     model_config = {
@@ -363,6 +582,7 @@ class KeyFinding(BaseModel):
         severity: Severity level (Low, Medium, High, Critical)
         clause_reference: Reference to related clause(s)
         impact: Business impact description
+        provenance: Provenance metadata for this finding
     """
     finding: str = Field(
         description="Description of the key finding"
@@ -376,6 +596,10 @@ class KeyFinding(BaseModel):
     )
     impact: str = Field(
         description="Description of the business impact"
+    )
+    provenance: Optional[SourceMetadata] = Field(
+        default=None,
+        description="Provenance metadata for this finding"
     )
     
     model_config = {
@@ -401,6 +625,7 @@ class Recommendation(BaseModel):
         priority: Priority level (Low, Medium, High, Critical)
         rationale: Explanation of why this is recommended
         related_findings: References to related findings
+        provenance: Provenance metadata for this recommendation
     """
     recommendation: str = Field(
         description="The recommended action to take"
@@ -414,6 +639,10 @@ class Recommendation(BaseModel):
     related_findings: List[str] = Field(
         default_factory=list,
         description="References to related key findings"
+    )
+    provenance: Optional[SourceMetadata] = Field(
+        default=None,
+        description="Provenance metadata for this recommendation"
     )
     
     model_config = {

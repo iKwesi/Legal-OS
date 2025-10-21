@@ -1,0 +1,73 @@
+{
+  "document_id": "9a497e7f-be34-459d-bb2f-191d0627202b",
+  "tracker_info": {
+    "total_items_tracked": 3,
+    "total_source_references": 3
+  },
+  "source_references": [
+    {
+      "chunk_id": "chunk_1",
+      "document_id": "9a497e7f-be34-459d-bb2f-191d0627202b",
+      "page": null,
+      "section": null,
+      "text_snippet": "18 \nARTICLE II \nPURCHASE AND SALE OF THE PURCHASED ASSETS; CLOSING \n2.1 \nPurchase and Sale of Purcha",
+      "confidence": 0.95
+    },
+    {
+      "chunk_id": "chunk_2",
+      "document_id": "9a497e7f-be34-459d-bb2f-191d0627202b",
+      "page": null,
+      "section": null,
+      "text_snippet": "and complete copies of resolutions of the Buyer\u2019s Board of Directors certified by the Secretary \nof ",
+      "confidence": 0.95
+    },
+    {
+      "chunk_id": "chunk_3",
+      "document_id": "9a497e7f-be34-459d-bb2f-191d0627202b",
+      "page": null,
+      "section": null,
+      "text_snippet": "Payment and pay to Seller such amount, if any, provided however, that if Buyer does not deliver \nsuc",
+      "confidence": 0.95
+    }
+  ],
+  "frontend_links": [
+    {
+      "link_id": "link_4eb7d050",
+      "link_text": "Chunk chunk_1",
+      "link_url": "/documents/9a497e7f-be34-459d-bb2f-191d0627202b",
+      "tooltip": "18 \nARTICLE II \nPURCHASE AND SALE OF THE PURCHASED ASSETS; CLOSING \n2.1 \nPurchase and Sale of Purcha"
+    },
+    {
+      "link_id": "link_50a65aa2",
+      "link_text": "Chunk chunk_2",
+      "link_url": "/documents/9a497e7f-be34-459d-bb2f-191d0627202b",
+      "tooltip": "and complete copies of resolutions of the Buyer\u2019s Board of Directors certified by the Secretary \nof "
+    },
+    {
+      "link_id": "link_8e424f77",
+      "link_text": "Chunk chunk_3",
+      "link_url": "/documents/9a497e7f-be34-459d-bb2f-191d0627202b",
+      "tooltip": "Payment and pay to Seller such amount, if any, provided however, that if Buyer does not deliver \nsuc"
+    }
+  ],
+  "enriched_clauses": [
+    {
+      "clause_type": "Payment Terms",
+      "clause_text": "Payment and pay to Seller such amount, if any, provided however, that if Buyer does not deliver such notice and pay such amount within the foregoing time period, Seller shall provide written notice to",
+      "has_provenance": true,
+      "source_count": 2
+    },
+    {
+      "clause_type": "Indemnification",
+      "clause_text": "Any Seller Indemnified Party or Buyer Indemnified Party (each, an \"Indemnified Party\") seeking indemnification hereunder shall give to the Party obligated to provide indemnification hereunder (the \"In",
+      "has_provenance": true,
+      "source_count": 2
+    },
+    {
+      "clause_type": "Warranties",
+      "clause_text": "After the Closing, except for remedies that cannot be waived as a matter of law, the enforcement of the indemnification provisions of Article X shall be the exclusive remedy, other than in the case of",
+      "has_provenance": true,
+      "source_count": 2
+    }
+  ]
+}

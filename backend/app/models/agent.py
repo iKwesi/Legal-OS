@@ -6,7 +6,7 @@ in the Legal-OS system, including clause extraction, risk scoring, and more.
 """
 
 from typing import List, Optional, Dict, Any, Literal
-from datetime import datetime
+from datetime import datetime, UTC
 from pydantic import BaseModel, Field
 
 
@@ -344,6 +344,305 @@ class RiskScoringResult(BaseModel):
                         "model": "gpt-4o-mini",
                         "total_clauses_scored": 5
                     },
+                    "timestamp": "2025-10-21T00:00:00Z",
+                    "document_id": "doc_abc123"
+                }
+            ]
+        }
+    }
+
+
+# Summary Agent Models
+
+class KeyFinding(BaseModel):
+    """
+    Represents a key finding from the document analysis.
+    
+    Attributes:
+        finding: Description of the finding
+        severity: Severity level (Low, Medium, High, Critical)
+        clause_reference: Reference to related clause(s)
+        impact: Business impact description
+    """
+    finding: str = Field(
+        description="Description of the key finding"
+    )
+    severity: Literal["Low", "Medium", "High", "Critical"] = Field(
+        description="Severity level of the finding"
+    )
+    clause_reference: Optional[str] = Field(
+        default=None,
+        description="Reference to the related clause or section"
+    )
+    impact: str = Field(
+        description="Description of the business impact"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "finding": "Unlimited indemnification liability without cap",
+                    "severity": "Critical",
+                    "clause_reference": "Indemnification - Section 8.2",
+                    "impact": "Exposes buyer to unlimited financial liability"
+                }
+            ]
+        }
+    }
+
+
+class Recommendation(BaseModel):
+    """
+    Represents an actionable recommendation.
+    
+    Attributes:
+        recommendation: The recommended action
+        priority: Priority level (Low, Medium, High, Critical)
+        rationale: Explanation of why this is recommended
+        related_findings: References to related findings
+    """
+    recommendation: str = Field(
+        description="The recommended action to take"
+    )
+    priority: Literal["Low", "Medium", "High", "Critical"] = Field(
+        description="Priority level for this recommendation"
+    )
+    rationale: str = Field(
+        description="Explanation of why this recommendation is important"
+    )
+    related_findings: List[str] = Field(
+        default_factory=list,
+        description="References to related key findings"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "recommendation": "Negotiate a cap on indemnification liability at 1-2x purchase price",
+                    "priority": "Critical",
+                    "rationale": "Unlimited liability exposes buyer to catastrophic financial risk",
+                    "related_findings": ["Unlimited indemnification liability"]
+                }
+            ]
+        }
+    }
+
+
+class ExecutiveSummary(BaseModel):
+    """
+    High-level executive summary of the document.
+    
+    Attributes:
+        overview: Brief overview of the document and transaction
+        critical_findings: Top 3-5 most critical findings
+        primary_recommendations: Top 3-5 most important recommendations
+        overall_risk_assessment: Overall risk level and brief explanation
+    """
+    overview: str = Field(
+        description="Brief overview of the document and transaction"
+    )
+    critical_findings: List[str] = Field(
+        description="Top 3-5 most critical findings requiring immediate attention"
+    )
+    primary_recommendations: List[str] = Field(
+        description="Top 3-5 most important recommendations"
+    )
+    overall_risk_assessment: str = Field(
+        description="Overall risk level and brief explanation"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "overview": "Asset purchase agreement for $10M acquisition with standard M&A terms",
+                    "critical_findings": [
+                        "Unlimited indemnification liability",
+                        "Short 12-month survival period for warranties",
+                        "Broad non-compete restrictions"
+                    ],
+                    "primary_recommendations": [
+                        "Negotiate indemnification cap",
+                        "Extend warranty survival period",
+                        "Narrow non-compete scope"
+                    ],
+                    "overall_risk_assessment": "High risk (65/100) - Several critical issues require negotiation"
+                }
+            ]
+        }
+    }
+
+
+class ClauseSummary(BaseModel):
+    """
+    Summary of a specific clause type.
+    
+    Attributes:
+        clause_type: Type of clause (e.g., payment_terms, warranties)
+        summary: Concise summary of the clause provisions
+        risk_level: Risk level for this clause type
+        key_points: Key points or notable provisions
+    """
+    clause_type: str = Field(
+        description="Type of clause (e.g., 'payment_terms', 'warranties', 'indemnification')"
+    )
+    summary: str = Field(
+        description="Concise summary of the clause provisions"
+    )
+    risk_level: Literal["Low", "Medium", "High", "Critical"] = Field(
+        description="Risk level for this clause type"
+    )
+    key_points: List[str] = Field(
+        default_factory=list,
+        description="Key points or notable provisions in this clause"
+    )
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "clause_type": "indemnification",
+                    "summary": "Seller provides unlimited indemnification for breaches of warranties",
+                    "risk_level": "Critical",
+                    "key_points": [
+                        "No cap on liability",
+                        "12-month survival period",
+                        "Broad scope of indemnification"
+                    ]
+                }
+            ]
+        }
+    }
+
+
+class DiligenceMemo(BaseModel):
+    """
+    Complete M&A diligence memo with all analysis sections.
+    
+    Attributes:
+        executive_summary: High-level summary with critical findings
+        clause_summaries: Summaries for each clause type
+        key_findings: Detailed list of all key findings
+        recommendations: Detailed list of all recommendations
+        overall_assessment: Final assessment and recommendation
+        metadata: Additional metadata about the memo generation
+        timestamp: When the memo was generated
+        document_id: ID of the document that was analyzed
+    """
+    executive_summary: ExecutiveSummary = Field(
+        description="High-level executive summary"
+    )
+    clause_summaries: List[ClauseSummary] = Field(
+        default_factory=list,
+        description="Summaries for each clause type analyzed"
+    )
+    key_findings: List[KeyFinding] = Field(
+        default_factory=list,
+        description="Detailed list of all key findings"
+    )
+    recommendations: List[Recommendation] = Field(
+        default_factory=list,
+        description="Detailed list of all recommendations"
+    )
+    overall_assessment: str = Field(
+        description="Final assessment with recommendation (Proceed/Proceed with Caution/Do Not Proceed)"
+    )
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Additional metadata (e.g., processing time, model used)"
+    )
+    timestamp: datetime = Field(
+        default_factory=lambda: datetime.now(UTC),
+        description="Timestamp when the memo was generated"
+    )
+    document_id: Optional[str] = Field(
+        default=None,
+        description="ID of the document that was analyzed"
+    )
+    
+    def to_markdown(self) -> str:
+        """
+        Convert the diligence memo to a formatted Markdown document.
+        
+        Returns:
+            Formatted Markdown string
+        """
+        md = "# M&A Due Diligence Memo\n\n"
+        
+        # Executive Summary
+        md += "## Executive Summary\n\n"
+        md += f"{self.executive_summary.overview}\n\n"
+        md += f"**Overall Risk Assessment:** {self.executive_summary.overall_risk_assessment}\n\n"
+        
+        md += "### Critical Findings\n\n"
+        for i, finding in enumerate(self.executive_summary.critical_findings, 1):
+            md += f"{i}. {finding}\n"
+        md += "\n"
+        
+        md += "### Primary Recommendations\n\n"
+        for i, rec in enumerate(self.executive_summary.primary_recommendations, 1):
+            md += f"{i}. {rec}\n"
+        md += "\n"
+        
+        # Clause-by-Clause Analysis
+        md += "## Clause-by-Clause Analysis\n\n"
+        for clause_summary in self.clause_summaries:
+            md += f"### {clause_summary.clause_type.replace('_', ' ').title()}\n\n"
+            md += f"**Risk Level:** {clause_summary.risk_level}\n\n"
+            md += f"{clause_summary.summary}\n\n"
+            if clause_summary.key_points:
+                md += "**Key Points:**\n\n"
+                for point in clause_summary.key_points:
+                    md += f"- {point}\n"
+                md += "\n"
+        
+        # Key Findings
+        md += "## Key Findings\n\n"
+        for finding in self.key_findings:
+            md += f"### {finding.finding}\n\n"
+            md += f"**Severity:** {finding.severity}\n\n"
+            if finding.clause_reference:
+                md += f"**Reference:** {finding.clause_reference}\n\n"
+            md += f"**Impact:** {finding.impact}\n\n"
+        
+        # Recommendations
+        md += "## Recommendations\n\n"
+        for rec in self.recommendations:
+            md += f"### {rec.recommendation}\n\n"
+            md += f"**Priority:** {rec.priority}\n\n"
+            md += f"**Rationale:** {rec.rationale}\n\n"
+            if rec.related_findings:
+                md += f"**Related Findings:** {', '.join(rec.related_findings)}\n\n"
+        
+        # Overall Assessment
+        md += "## Overall Assessment\n\n"
+        md += f"{self.overall_assessment}\n\n"
+        
+        # Metadata
+        md += "---\n\n"
+        md += f"*Generated: {self.timestamp.isoformat()}*\n"
+        if self.document_id:
+            md += f"*Document ID: {self.document_id}*\n"
+        
+        return md
+    
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "executive_summary": {
+                        "overview": "Asset purchase agreement for $10M acquisition",
+                        "critical_findings": ["Unlimited indemnification"],
+                        "primary_recommendations": ["Negotiate cap"],
+                        "overall_risk_assessment": "High risk (65/100)"
+                    },
+                    "clause_summaries": [],
+                    "key_findings": [],
+                    "recommendations": [],
+                    "overall_assessment": "Proceed with Caution - Address critical issues before closing",
+                    "metadata": {"processing_time_seconds": 45.2},
                     "timestamp": "2025-10-21T00:00:00Z",
                     "document_id": "doc_abc123"
                 }

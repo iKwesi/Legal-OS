@@ -8,32 +8,11 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.models.api import QueryRequest, QueryResponse
 from app.rag.pipeline import RAGPipeline
-from app.rag.vector_store import VectorStore
+from app.rag.shared import get_shared_vector_store, get_shared_rag_pipeline
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# Lazy initialization of default RAG pipeline and vector store
-# This prevents initialization errors during module import (e.g., in tests)
-_default_rag_pipeline = None
-_vector_store = None
-
-
-def _get_default_pipeline() -> RAGPipeline:
-    """Get or create the default RAG pipeline."""
-    global _default_rag_pipeline
-    if _default_rag_pipeline is None:
-        _default_rag_pipeline = RAGPipeline()
-    return _default_rag_pipeline
-
-
-def _get_vector_store() -> VectorStore:
-    """Get or create the vector store."""
-    global _vector_store
-    if _vector_store is None:
-        _vector_store = VectorStore()
-    return _vector_store
 
 
 @router.post("/query", response_model=QueryResponse)
@@ -92,12 +71,12 @@ async def query_documents(request: QueryRequest) -> QueryResponse:
             )
             pipeline = RAGPipeline(
                 retriever_config=request.retriever_config,
-                vector_store=_get_vector_store(),
+                vector_store=get_shared_vector_store(),
             )
         else:
-            # Use default pipeline
-            logger.info("Using default naive retriever")
-            pipeline = _get_default_pipeline()
+            # Use shared default pipeline
+            logger.info("Using shared default naive retriever")
+            pipeline = get_shared_rag_pipeline()
 
         # Execute RAG query
         result = pipeline.query(

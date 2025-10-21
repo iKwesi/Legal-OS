@@ -447,13 +447,34 @@ async def get_analysis_results(session_id: str) -> AnalysisReport:
         
         logger.info(f"Final summary_text type: {type(summary_text)}, is string: {isinstance(summary_text, str)}")
         
-        # Extract clauses
+        # Build risk level mapping from scored_clauses
+        risk_map = {}
+        for scored_clause in results.get("scored_clauses", []):
+            if hasattr(scored_clause, "clause") and hasattr(scored_clause, "risk_score"):
+                clause_text = scored_clause.clause.clause_text
+                risk_score_obj = scored_clause.risk_score
+                risk_map[clause_text] = {
+                    "risk_level": risk_score_obj.category.lower() if hasattr(risk_score_obj, "category") else "medium",
+                    "risk_score": risk_score_obj.score if hasattr(risk_score_obj, "score") else 50
+                }
+        
+        # Extract clauses and enrich with risk data
         extracted_clauses = []
         for clause in results.get("extracted_clauses", []):
             if hasattr(clause, "model_dump"):
-                extracted_clauses.append(clause.model_dump())
+                clause_dict = clause.model_dump()
             elif isinstance(clause, dict):
-                extracted_clauses.append(clause)
+                clause_dict = clause.copy()
+            else:
+                continue
+            
+            # Add risk data if available
+            clause_text = clause_dict.get("clause_text", "")
+            if clause_text in risk_map:
+                clause_dict["risk_level"] = risk_map[clause_text]["risk_level"]
+                clause_dict["risk_score"] = risk_map[clause_text]["risk_score"]
+            
+            extracted_clauses.append(clause_dict)
         
         # Build red flags from scored clauses
         red_flags = []

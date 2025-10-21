@@ -18,6 +18,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Import session document storage from analyze endpoint
+# This allows upload to register documents for later analysis
+try:
+    from app.api.v1.endpoints.analyze import store_session_document
+except ImportError:
+    # Fallback if analyze endpoint not yet available
+    def store_session_document(session_id: str, document_path: str) -> None:
+        pass
+
 
 @router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_documents(
@@ -122,6 +131,12 @@ async def upload_documents(
                 logger.warning(
                     f"Some documents failed ingestion: {result['failures']}"
                 )
+
+            # Store document paths for analysis endpoint (Story 5.0)
+            # For MVP, we store the first successfully ingested document
+            if saved_files:
+                store_session_document(session_id, saved_files[0])
+                logger.info(f"Registered document for session {session_id}: {saved_files[0]}")
 
             return UploadResponse(
                 session_id=session_id,

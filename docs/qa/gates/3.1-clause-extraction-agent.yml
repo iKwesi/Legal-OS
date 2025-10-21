@@ -1,0 +1,75 @@
+# Quality Gate Decision for Story 3.1
+schema: 1
+story: "3.1"
+story_title: "Clause Extraction Agent"
+gate: "CONCERNS"
+status_reason: "Implementation is functional with all tests passing, but has deprecation warnings and test quality issues that should be addressed before production."
+reviewer: "Quinn (Test Architect)"
+updated: "2025-10-21T02:10:00-04:00"
+
+waiver: { active: false }
+
+top_issues:
+  - id: "DEP-001"
+    severity: medium
+    finding: "Using deprecated datetime.utcnow() - will be removed in future Python versions"
+    suggested_action: "Replace with datetime.now(datetime.UTC) throughout clause_extraction.py"
+  - id: "DEP-002"
+    severity: medium
+    finding: "Using deprecated LangGraph imports (create_react_agent from langgraph.prebuilt)"
+    suggested_action: "Update to use 'from langchain.agents import create_agent' per deprecation warning"
+  - id: "TEST-001"
+    severity: medium
+    finding: "Tests were broken on initial review - importing non-existent AgentState and using wrong method names"
+    suggested_action: "Tests have been fixed by QA, but indicates insufficient test validation before marking Ready for Review"
+  - id: "CODE-001"
+    severity: low
+    finding: "Print statements in production code (lines 169, 171, 186, 188 in clause_extraction.py)"
+    suggested_action: "Replace print() with proper logging.info() or logging.debug() calls"
+
+risk_summary:
+  totals: { critical: 0, high: 0, medium: 3, low: 1 }
+  recommendations:
+    must_fix:
+      - "Fix deprecation warnings before they become breaking changes"
+      - "Ensure tests are validated before marking stories as Ready for Review"
+    monitor:
+      - "Code quality and logging practices"
+
+quality_score: 70
+
+evidence:
+  tests_reviewed: 16
+  tests_passing: 16
+  risks_identified: 4
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: "No security concerns - agent uses proper API key management"
+  performance:
+    status: PASS
+    notes: "Reasonable performance with recursion limit of 50, ~30-45s processing time documented"
+  reliability:
+    status: PASS
+    notes: "Good error handling throughout, returns structured errors on failure"
+  maintainability:
+    status: CONCERNS
+    notes: "Deprecation warnings and print statements reduce maintainability"
+
+recommendations:
+  immediate:
+    - action: "Replace datetime.utcnow() with datetime.now(datetime.UTC)"
+      refs: ["backend/app/agents/clause_extraction.py:125", "backend/app/agents/clause_extraction.py:203", "backend/app/agents/clause_extraction.py:208", "backend/app/agents/clause_extraction.py:213"]
+    - action: "Update LangGraph imports to use langchain.agents.create_agent"
+      refs: ["backend/app/agents/clause_extraction.py:17", "backend/app/agents/clause_extraction.py:61"]
+    - action: "Replace print() statements with logging calls"
+      refs: ["backend/app/agents/clause_extraction.py:169", "backend/app/agents/clause_extraction.py:171", "backend/app/agents/clause_extraction.py:186", "backend/app/agents/clause_extraction.py:188"]
+  future:
+    - action: "Consider adding integration test with real document (currently placeholder)"
+      refs: ["backend/tests/test_clause_extraction.py:269-274"]
+    - action: "Add pytest.ini configuration to register custom 'integration' mark"
+      refs: ["backend/pyproject.toml or pytest.ini"]

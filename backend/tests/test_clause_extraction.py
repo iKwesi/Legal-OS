@@ -88,7 +88,10 @@ class TestClauseExtractionAgent:
                 metadata={"chunk_id": "chunk_2", "page": 5}
             ),
         ]
-        agent.retriever.invoke = Mock(return_value=mock_docs)
+        # Mock the _ensure_retriever method to return a mock retriever
+        mock_retriever = Mock()
+        mock_retriever.invoke = Mock(return_value=mock_docs)
+        agent._ensure_retriever = Mock(return_value=mock_retriever)
         
         result = agent._search_document_tool("payment terms")
         
@@ -99,7 +102,10 @@ class TestClauseExtractionAgent:
     
     def test_search_document_tool_no_results(self, agent):
         """Test search_document tool with no results."""
-        agent.retriever.invoke = Mock(return_value=[])
+        # Mock the _ensure_retriever method to return a mock retriever
+        mock_retriever = Mock()
+        mock_retriever.invoke = Mock(return_value=[])
+        agent._ensure_retriever = Mock(return_value=mock_retriever)
         
         result = agent._search_document_tool("nonexistent clause")
         
@@ -107,9 +113,10 @@ class TestClauseExtractionAgent:
     
     def test_search_document_tool_error_handling(self, agent):
         """Test search_document tool error handling."""
-        agent.retriever.invoke = Mock(
-            side_effect=Exception("Retrieval error")
-        )
+        # Mock the _ensure_retriever method to return a mock retriever that raises error
+        mock_retriever = Mock()
+        mock_retriever.invoke = Mock(side_effect=Exception("Retrieval error"))
+        agent._ensure_retriever = Mock(return_value=mock_retriever)
         
         result = agent._search_document_tool("payment terms")
         

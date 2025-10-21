@@ -1,0 +1,52 @@
+{
+  "document_id": "freedom_asset_agreement",
+  "status": "completed_with_errors",
+  "started_at": "2025-10-21T16:22:17.259625+00:00",
+  "completed_at": null,
+  "completed_steps": [
+    "ingestion",
+    "clause_extraction",
+    "risk_scoring",
+    "summary",
+    "provenance",
+    "checklist"
+  ],
+  "errors": [
+    "Checklist error: 'ChecklistItem' object has no attribute 'question'"
+  ],
+  "metadata": {
+    "ingestion": {
+      "total_chunks": 345,
+      "processing_time": 0
+    },
+    "clause_extraction": {
+      "total_clauses": 3,
+      "total_red_flags": 5,
+      "processing_time": 46.886928
+    },
+    "risk_scoring": {
+      "total_scored_clauses": 3,
+      "overall_risk_score": 65,
+      "overall_risk_category": "High",
+      "processing_time": 26.317682
+    },
+    "summary": {
+      "total_findings": 0,
+      "total_recommendations": 5,
+      "processing_time": 53.498919
+    },
+    "provenance": {
+      "total_items_tracked": 3
+    }
+  },
+  "summary": {
+    "total_clauses": 3,
+    "total_scored_clauses": 3,
+    "overall_risk_score": 65,
+    "overall_risk_category": "High",
+    "total_findings": 0,
+    "total_recommendations": 5,
+    "total_checklist_items": 0,
+    "total_provenance_items": 3
+  }
+}

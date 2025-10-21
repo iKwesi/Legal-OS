@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1173d4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex flex-col min-h-screen">
+<header class="bg-background-light dark:bg-background-dark/50 border-b border-gray-200 dark:border-gray-800 sticky top-0 backdrop-blur-sm z-10">
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex items-center justify-between h-16">
+<div class="flex items-center space-x-4">
+<div class="text-primary size-7">
+<svg class="size-full" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM11 19.93C7.05 19.44 4 16.08 4 12C4 11.38 4.08 10.79 4.21 10.21L9 15V17C9 18.1 9.9 19 11 19V19.93ZM17.9 17.39C17.65 16.58 16.89 16 16 16H15V13C15 12.45 14.55 12 14 12H8V10H10C10.55 10 11 9.55 11 9V7H13C14.1 7 15 6.1 15 5V4.59C17.93 5.78 20 8.65 20 12C20 14.08 19.2 15.97 17.9 17.39Z"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold text-gray-900 dark:text-white">MergerMind</h1>
+</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-primary dark:text-primary" href="#">Projects</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Documents</a>
+<a class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="#">Help</a>
+<div class="w-8 h-8 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC93Y8uVYLcEjGHkm3SOoCs5NhDdpTygImqwn9B6VHb-zsab5eu3rP2LUhgwocYCxf_nLHuvIV3Sy_itBn65tPsyDWveaDz_og52YTcwrhdY-k1xBY7VH-LSTha6Y8-sZg1MicuH8-byopw1ljdzZ35kAlLUCy3iyK4EH0gnDq9ZVUcdjHcRUIVrsFPIdYQotkw2CgA7Ux6pMbPm67AuDf0xzrByaSQM2tarONULaeKTs4IikNd5gtUxjX5_0KsOKNDELt-CGgFHF0");'></div>
+</div>
+<button class="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="max-w-4xl mx-auto">
+<div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+<h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white mb-4 md:mb-0">Diligence Checklist</h2>
+<a class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium bg-background-light dark:bg-background-dark border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" href="#">
+<span class="material-symbols-outlined mr-2 -ml-1 text-base">arrow_back</span>
+                        Back to Analysis Results
+                    </a>
+</div>
+<div class="bg-background-light dark:bg-background-dark/50 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm">
+<div class="divide-y divide-gray-200 dark:divide-gray-800">
+<div class="p-4 sm:p-6">
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contractual Obligations</h3>
+<ul class="space-y-4">
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb1" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb1">Review all contracts for change of control provisions.</label>
+</li>
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb2" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb2">Identify key contracts with termination rights upon change of control.</label>
+</li>
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb3" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb3">Assess the impact of change of control on contract performance.</label>
+</li>
+</ul>
+</div>
+<div class="p-4 sm:p-6">
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Assignment &amp; Consents</h3>
+<ul class="space-y-4">
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb4" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb4">Analyze assignment clauses in all contracts.</label>
+</li>
+<li class="flex items-start group">
+<input checked="" class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb5" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb5">Determine if any consents are required for contract assignment.</label>
+</li>
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb6" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb6">Evaluate the financial implications of contract termination or assignment.</label>
+</li>
+</ul>
+</div>
+<div class="p-4 sm:p-6">
+<h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Reporting &amp; Risk Assessment</h3>
+<ul class="space-y-4">
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb7" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb7">Summarize key findings and recommendations.</label>
+</li>
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb8" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb8">Prepare a report on contract review for the client.</label>
+</li>
+<li class="flex items-start group">
+<input class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb9" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb9">Highlight any potential risks or liabilities.</label>
+</li>
+<li class="flex items-start group">
+<input checked="" class="peer h-5 w-5 mt-0.5 shrink-0 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary/50 dark:bg-background-dark" id="cb10" type="checkbox"/>
+<label class="ml-3 text-sm text-gray-700 dark:text-gray-300 peer-checked:line-through peer-checked:text-gray-500 dark:peer-checked:text-gray-400" for="cb10">Ensure all contracts are properly documented and organized.</label>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LegalAI - Upload Contracts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1173d4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "foreground-light": "#1f2937",
+                        "foreground-dark": "#e5e7eb",
+                        "border-light": "#e5e7eb",
+                        "border-dark": "#374151"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-foreground-light dark:text-foreground-dark">
+<div class="flex flex-col min-h-screen">
+<header class="flex items-center justify-between px-6 sm:px-10 py-4 border-b border-border-light dark:border-border-dark">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center size-8 bg-primary rounded-full text-white">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold text-foreground-light dark:text-foreground-dark">LegalAI</h1>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Projects</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Documents</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Help</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="md:hidden p-2 rounded-full hover:bg-primary/10 dark:hover:bg-primary/20">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAbmMbv8TdjmQCGcH1BIPscBrGh3riU1cHJ873xnrYdixC8BMS0LZRpVQLCygAGIIvN3mhOrBP06UQCz-radRPYzpIasaPdGnA-pvwLB_xC4O7eD81lL27ePNkL53xAR5jV_oy8Eywv8ZvYZHH4be-Qmh8PC3b1L65EvVTr08AuOGz_Dh_rcIGY8U2A7ysXHwbLkM0eXgojYHkKDOlkCv2O2d-CZhzYOzh7Axv6GDgaaX_wKbGMx6fEvCO68Q5oYlTIvn6RyHk8Lm8");'></div>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+<div class="w-full max-w-4xl mx-auto flex flex-col items-center text-center">
+<h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-foreground-light dark:text-foreground-dark mb-4">Upload Contracts for Analysis</h2>
+<p class="max-w-2xl text-foreground-light/70 dark:text-foreground-dark/70 mb-10">Securely upload your legal documents. Our AI will analyze them for key clauses, risks, and opportunities.</p>
+<div class="w-full p-4">
+<div class="relative flex flex-col items-center justify-center w-full h-64 px-6 py-14 rounded-lg border-2 border-dashed border-border-light dark:border-border-dark hover:border-primary transition-colors duration-300 bg-background-light dark:bg-background-dark/50" id="file-upload-zone">
+<div class="flex flex-col items-center gap-4 text-foreground-light dark:text-foreground-dark">
+<span class="material-symbols-outlined text-5xl text-primary">cloud_upload</span>
+<p class="text-lg font-semibold">Drag &amp; Drop Contracts Here</p>
+<p class="text-sm text-foreground-light/70 dark:text-foreground-dark/70">or</p>
+<label class="cursor-pointer inline-flex items-center justify-center h-10 px-5 rounded-lg bg-primary/10 dark:bg-primary/20 text-primary text-sm font-semibold hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors" for="file-input">
+                                Browse Files
+                            </label>
+<input class="sr-only" id="file-input" multiple="" type="file"/>
+</div>
+</div>
+</div>
+<div class="w-full max-w-3xl mt-6 space-y-3 hidden" id="file-list">
+<div class="flex items-center justify-between p-3 rounded-lg bg-background-light dark:bg-background-dark/50 border border-border-light dark:border-border-dark">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">description</span>
+<span class="text-sm font-medium">Master_Services_Agreement.pdf</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-24 h-2 bg-border-light dark:bg-border-dark rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 75%;"></div>
+</div>
+<button class="text-foreground-light/50 dark:text-foreground-dark/50 hover:text-primary">
+<span class="material-symbols-outlined text-xl">cancel</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between p-3 rounded-lg bg-primary/5 dark:bg-primary/10 border border-primary/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-green-500">check_circle</span>
+<span class="text-sm font-medium">Non_Disclosure_Agreement_Final.docx</span>
+</div>
+<button class="text-foreground-light/50 dark:text-foreground-dark/50 hover:text-primary">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+<div class="w-full mt-10 flex justify-center">
+<button class="flex min-w-[200px] items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold tracking-wide shadow-lg hover:bg-primary/90 transition-all duration-300 disabled:bg-border-light disabled:dark:bg-border-dark disabled:text-foreground-light/50 disabled:dark:text-foreground-dark/50 disabled:cursor-not-allowed" id="start-analysis-btn">
+<span>Start Analysis</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+<script>
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const startAnalysisBtn = document.getElementById('start-analysis-btn');
+        const uploadZone = document.getElementById('file-upload-zone');
+        // Initially disable the button
+        startAnalysisBtn.disabled = true;
+        const handleFiles = (files) => {
+            if (files.length > 0) {
+                fileList.classList.remove('hidden');
+                startAnalysisBtn.disabled = false;
+            } else {
+                fileList.classList.add('hidden');
+                startAnalysisBtn.disabled = true;
+            }
+        };
+        fileInput.addEventListener('change', (event) => {
+            handleFiles(event.target.files);
+        });
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, preventDefaults, false)
+        });
+        function preventDefaults(e) {
+            e.preventDefault()
+            e.stopPropagation()
+        }
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, highlight, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadZone.addEventListener(eventName, unhighlight, false);
+        });
+        function highlight(e) {
+            uploadZone.classList.add('border-primary', 'bg-primary/5');
+        }
+        function unhighlight(e) {
+            uploadZone.classList.remove('border-primary', 'bg-primary/5');
+        }
+        uploadZone.addEventListener('drop', handleDrop, false);
+        function handleDrop(e) {
+            let dt = e.dataTransfer
+            let files = dt.files
+            handleFiles(files)
+            // Manually set files to the input for form submission
+            fileInput.files = files;
+        }
+    </script>
+
+
+</body></html>

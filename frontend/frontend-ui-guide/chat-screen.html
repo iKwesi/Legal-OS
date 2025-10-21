@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<title>LegalAI Chat</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1173d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+<div class="flex h-screen w-full flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-gray-200 dark:border-gray-700/50 px-6 py-3">
+<div class="flex items-center gap-3 text-gray-900 dark:text-white">
+<svg class="h-6 w-6 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+<h1 class="text-xl font-bold">LegalAI</h1>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-gray-300">
+<a class="hover:text-primary" href="#">Dashboard</a>
+<a class="hover:text-primary" href="#">Documents</a>
+<a class="hover:text-primary" href="#">Help</a>
+</nav>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAMKtXbqc1WzAkFlu_RJfdTe5sN-PsGyQQ-nluiVyB85mEfCWNfNDI73WzEsZTtc4IZyXkd6qfVziyZg9nAkX81ATz8L7N7TZ-95Wv6QRiyf5uev59iKu1NXMeyIuE3e3RBu_m_1zyzAtw3CTNY5CKWN8qEmGScIwxYw14bWvq3i4P8Iul-nVgxU4Yo2Plilnj7Glh-Hyj431DNz2B32niCVQQX9cRpXmae96ykj-Wt1xDksh7LlV9qyDd9-79Di5pQa7knrleyQVE");'></div>
+</div>
+</header>
+<main class="flex flex-1 flex-col overflow-hidden">
+<div class="flex flex-col flex-1">
+<div class="border-b border-gray-200 dark:border-gray-700/50 px-6 py-4">
+<div class="text-sm text-gray-500 dark:text-gray-400 mb-2">
+<a class="hover:text-primary" href="#">Analysis Results</a>
+<span class="mx-1">/</span>
+<span class="text-gray-800 dark:text-gray-200">Chat</span>
+</div>
+<h2 class="text-2xl font-bold text-gray-900 dark:text-white">Chat with Documents</h2>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<div class="flex items-start gap-3 max-w-xl">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBnCVEIaHFXkz9952ojRuH3zj_pL2V2PfM2kIcm2s_GOAZ1xC29ZqKhqD5Zth1RKPUQSrT2JKvBcMg3RZBwbUYffHGHySG7Jk-058R73BCkzFYtsg4zr7Kthg7eaD0N1_EbqX9inEgRlAlE2l8daP3WFzIzo0iCdyRtd59c3siut0tBHUM8iPRIEbiaBBv887awiXjZ0fg0YTADVaMYjn_r5GPaAap1A36nPe3ZbNF4x62bgEPQY_-M9XFf8M1o3g6960-ANWiWZ-Q");'></div>
+<div class="flex flex-col gap-1.5">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400">AI Assistant</p>
+<div class="rounded-lg bg-gray-200/60 dark:bg-gray-700/40 p-3 text-sm text-gray-800 dark:text-gray-200">
+                Hello! How can I assist you with your document analysis today?
+              </div>
+</div>
+</div>
+<div class="flex items-start gap-3 max-w-xl ml-auto justify-end">
+<div class="flex flex-col gap-1.5 items-end">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400">Sarah Chen</p>
+<div class="rounded-lg bg-primary p-3 text-sm text-white">
+                Can you summarize the key terms of the contract?
+              </div>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzrD7oIDGfXh3iWEkv4GZmzRU9ILfF8DMBkeabYjSiwYOqpDOWV9Xh4Bck-8DpluZG35tWKUjaV4lO0lXM9p_lWwIPV_oGh2PXUguZUsHH3hUzZjODRXH00zCTFnxYE75fluf_Zg41JhlRPRToGXjh8_UREQpwCsba27-kHtXeH90IJbv5UPK4TI57LkZ6UL5wklReFmyKW1HTg2hpCGH4tUuwDQ13GitvpklkxSYp8kEQ4tnJEDRWazufz7_UdrXqc08yp2oAMfs");'></div>
+</div>
+<div class="flex items-start gap-3 max-w-xl">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCLZTJ-MXD5jIU7yQYowSjTbVkkzFiRw12Lf_FG3dClOBpefTaVM85fBR-Zo045apr56vOIshy3e4_puh2om_qx0gVZcvkWZffi8xnLUit-rogYzVDkeaYKHj2a_QNKu4c-iZVejZpdjmQdn1gnjbT4mSpzd8rFobFyHR4Ri31K9TAaZg5hhCQ7mLVIxXYVwmtEe4aww2s2YpOW0qIZOfR8phuEQgp4qcqgCTur9siBrLEZ7CE_rY9b1f-8ycD1boNqlZIr6FhdZSc");'></div>
+<div class="flex flex-col gap-1.5 w-full">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400">AI Assistant</p>
+<div class="rounded-lg bg-gray-200/60 dark:bg-gray-700/40 p-3 text-sm text-gray-800 dark:text-gray-200">
+<div class="flex items-center gap-2">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse [animation-delay:0.2s]"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse [animation-delay:0.4s]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-start gap-3 max-w-xl">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 shrink-0" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCLZTJ-MXD5jIU7yQYowSjTbVkkzFiRw12Lf_FG3dClOBpefTaVM85fBR-Zo045apr56vOIshy3e4_puh2om_qx0gVZcvkWZffi8xnLUit-rogYzVDkeaYKHj2a_QNKu4c-iZVejZpdjmQdn1gnjbT4mSpzd8rFobFyHR4Ri31K9TAaZg5hhCQ7mLVIxXYVwmtEe4aww2s2YpOW0qIZOfR8phuEQgp4qcqgCTur9siBrLEZ7CE_rY9b1f-8ycD1boNqlZIr6FhdZSc");'></div>
+<div class="flex flex-col gap-2 w-full">
+<p class="text-xs font-medium text-gray-500 dark:text-gray-400">AI Assistant</p>
+<div class="rounded-lg bg-gray-200/60 dark:bg-gray-700/40 p-3 text-sm text-gray-800 dark:text-gray-200">
+                The contract outlines a merger between two companies, with Company A acquiring Company B. Key terms include a purchase price of $50 million, closing date set for December 31, 2024, and a non-compete clause for key executives of Company B for two years post-acquisition. <a class="text-primary font-medium hover:underline" href="#">[1]</a>
+</div>
+<div class="flex w-full items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700/50 bg-background-light dark:bg-background-dark p-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-10" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCp8IScgOlHy7gvq5cllqMcdOoxhsZTpHpWqwpqh2K63koGiurtu36MdgI1jGG3p0330AZU5Ab4tgB-bwPK8soi29n36A5ERLRcyMWRgZA2dl-hwVjqUv7nnw1_Ir7YLjGSG-Wmb644hN8MKB3cg6hJ5vx3qZJFQqMlPsZKXBfh-HGwfyeiKc6DvDoGeNHmPAZVKnra-ToCqPsMeKzg0I0tetT5T0BfO73xIbqZNaAgut1bXslB0o6-dloOQbWVmWZv3Q1TNRoDgo0");'></div>
+<p class="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-2 flex-1">Contract Document - Section 4.2</p>
+</div>
+</div>
+</div>
+</div>
+<div class="border-t border-gray-200 dark:border-gray-700/50 bg-background-light dark:bg-background-dark p-4">
+<div class="relative max-w-4xl mx-auto">
+<input class="form-input w-full rounded-lg text-gray-900 dark:text-white bg-gray-200/60 dark:bg-gray-700/40 focus:ring-2 focus:ring-primary/50 border-none h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 pr-12 text-sm" placeholder="Type your message..." value=""/>
+<button class="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+</body></html>

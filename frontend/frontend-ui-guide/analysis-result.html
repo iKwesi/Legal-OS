@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1173d4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="flex flex-col min-h-screen">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-slate-200 dark:border-slate-800 px-6 py-3">
+<div class="flex items-center gap-4">
+<div class="w-8 h-8 text-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M24 4H6V17.3333V30.6667H24V44H42V30.6667V17.3333H24V4Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white">LegalAI</h1>
+</div>
+<nav class="flex items-center gap-6 text-sm font-medium">
+<a class="text-primary font-bold border-b-2 border-primary pb-1" href="#">Summary</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Checklist</a>
+<a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Chat</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-sm hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-base">add_circle</span>
+<span>Start New Analysis</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDlevvbUVYxeXwY1uoJNe7gmI6QqSnGqcIb4_2nuIxbZNX5mS1XdG49jCUK2nqnLhqqmAObcQR61h11u3Y0sUa6WJrwYQTQRkjZuDA-JtHos0bndtdyo9ApPC0TlJA29U9UCYPLJiU7f9pAvdz5obcCcl2yLNUqwGzpje7O-EpXzU7xdEwa-TCdYqXbZmbBNzIk7jzCYXFi7ykpjDRC_Gyl4avORxNMp4b_Z8O5BW39amZmXdgJ5vex1YRJpcKV3fO2UtxL7FRxt3o");'></div>
+</div>
+</header>
+<main class="flex flex-1">
+<aside class="w-96 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800">
+<h2 class="text-lg font-bold text-slate-900 dark:text-white">Risk/Key Clauses</h2>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="divide-y divide-slate-200 dark:divide-slate-800">
+<li class="p-4 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<div>
+<p class="font-semibold text-slate-800 dark:text-slate-200">Confidentiality Breach</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Low Risk</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span>
+</li>
+<li class="p-4 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer transition-colors bg-primary/10 dark:bg-primary/20 border-l-4 border-primary">
+<div>
+<p class="font-semibold text-primary">Termination Clause</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Medium Risk</span>
+</div>
+<span class="material-symbols-outlined text-primary">chevron_right</span>
+</li>
+<li class="p-4 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<div>
+<p class="font-semibold text-slate-800 dark:text-slate-200">Intellectual Property</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">High Risk</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span>
+</li>
+<li class="p-4 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<div>
+<p class="font-semibold text-slate-800 dark:text-slate-200">Payment Terms</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">Low Risk</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span>
+</li>
+<li class="p-4 flex justify-between items-center hover:bg-slate-100 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+<div>
+<p class="font-semibold text-slate-800 dark:text-slate-200">Non-Compete Clause</p>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Medium Risk</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500">chevron_right</span>
+</li>
+</ul>
+</div>
+</aside>
+<section class="flex-1 p-8 overflow-y-auto">
+<div class="max-w-4xl mx-auto">
+<h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-4">AI-Generated Summary Report</h1>
+<p class="text-slate-600 dark:text-slate-400 mb-8">
+                        This report provides a comprehensive overview of the uploaded contracts, highlighting key clauses, potential risks, and important considerations for the M&amp;A due diligence process. Provenance links are indicated by
+                        <span class="font-mono bg-slate-200 dark:bg-slate-800 text-primary px-1.5 py-0.5 rounded-md text-sm">[#]</span>, allowing for easy reference back to the original documents.
+                    </p>
+<div class="space-y-8">
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">Executive Summary</h3>
+<p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                The contracts under review outline a complex agreement between two parties, focusing on the transfer of assets and liabilities. Key areas of concern include intellectual property rights, termination clauses, and confidentiality obligations. The overall risk assessment is moderate, requiring careful consideration of specific clauses <a class="text-primary hover:underline" href="#">[1]</a>, <a class="text-primary hover:underline" href="#">[3]</a>.
+                            </p>
+</div>
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">Key Findings</h3>
+<ul class="space-y-4 list-disc list-inside text-slate-700 dark:text-slate-300 leading-relaxed">
+<li>
+<span class="font-semibold text-slate-800 dark:text-slate-200">Intellectual Property:</span> The contracts stipulate a transfer of intellectual property rights, but the scope and limitations require further clarification <a class="text-primary hover:underline" href="#">[2]</a>.
+                                </li>
+<li>
+<span class="font-semibold text-slate-800 dark:text-slate-200">Termination:</span> The termination clause outlines specific conditions under which the agreement can be terminated, with potential financial implications for both parties <a class="text-primary hover:underline" href="#">[1]</a>.
+                                </li>
+<li>
+<span class="font-semibold text-slate-800 dark:text-slate-200">Confidentiality:</span> Strict confidentiality obligations are imposed on both parties, with penalties for breaches. The duration and extent of these obligations should be carefully reviewed <a class="text-primary hover:underline" href="#">[3]</a>.
+                                </li>
+</ul>
+</div>
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">Risk Assessment</h3>
+<p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                                The overall risk assessment for this agreement is <span class="font-semibold text-yellow-600 dark:text-yellow-400">moderate</span>. While the contracts appear comprehensive, certain clauses require further scrutiny to ensure alignment with the client's objectives and to mitigate potential risks. Specific areas of concern include the scope of intellectual property transfer and the financial implications of termination <a class="text-primary hover:underline" href="#">[1]</a>, <a class="text-primary hover:underline" href="#">[2]</a>, <a class="text-primary hover:underline" href="#">[3]</a>.
+                            </p>
+</div>
+<div>
+<h3 class="text-2xl font-bold text-slate-900 dark:text-white mb-3 border-b border-slate-200 dark:border-slate-800 pb-2">Recommendations</h3>
+<ol class="space-y-4 list-decimal list-inside text-slate-700 dark:text-slate-300 leading-relaxed">
+<li><span class="font-semibold">Clarify IP Scope:</span> Seek clarification on the precise scope of intellectual property rights being transferred to avoid future disputes <a class="text-primary hover:underline" href="#">[2]</a>.</li>
+<li><span class="font-semibold">Review Termination Terms:</span> Conduct a thorough review of the termination clause to understand the conditions and potential financial impacts <a class="text-primary hover:underline" href="#">[1]</a>.</li>
+<li><span class="font-semibold">Assess Confidentiality Obligations:</span> Evaluate the duration and extent of confidentiality obligations to ensure they are reasonable and do not unduly restrict future activities <a class="text-primary hover:underline" href="#">[3]</a>.</li>
+</ol>
+</div>
+</div>
+<footer class="mt-12 pt-6 border-t border-slate-200 dark:border-slate-800">
+<h4 class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Provenance</h4>
+<p class="text-xs text-slate-500 dark:text-slate-500 font-mono">[1] Contract A, Section 3.2; [2] Contract B, Exhibit C; [3] Contract A, Section 5.1</p>
+</footer>
+</div>
+</section>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,234 @@
+{
+  "document_id": "demo_doc_001",
+  "timestamp": "2025-10-21T15:08:09.998131+00:00",
+  "metadata": {
+    "processing_time_seconds": 21.498021,
+    "model": "gpt-4o-mini",
+    "total_items": 26,
+    "total_questions": 5,
+    "memo_findings_count": 3,
+    "memo_recommendations_count": 3
+  },
+  "checklist_items": [
+    {
+      "item": "Contract review and validation",
+      "category": "Legal",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Compliance verification",
+      "category": "Legal",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Litigation and disputes review",
+      "category": "Legal",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Intellectual property rights verification",
+      "category": "Legal",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Regulatory approvals status",
+      "category": "Legal",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Financial statement verification",
+      "category": "Financial",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Tax compliance review",
+      "category": "Financial",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Debt and liabilities assessment",
+      "category": "Financial",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Working capital analysis",
+      "category": "Financial",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Valuation verification",
+      "category": "Financial",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Business operations review",
+      "category": "Operational",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Key personnel retention plans",
+      "category": "Operational",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Customer and supplier contracts review",
+      "category": "Operational",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Technology and systems assessment",
+      "category": "Operational",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Integration planning",
+      "category": "Operational",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Insurance coverage review",
+      "category": "Risk Management",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Cybersecurity assessment",
+      "category": "Risk Management",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Environmental compliance check",
+      "category": "Risk Management",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Data privacy compliance verification",
+      "category": "Risk Management",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Business continuity plans review",
+      "category": "Risk Management",
+      "priority": "Medium",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Investigate and verify: Unlimited indemnification liability without cap",
+      "category": "Legal",
+      "priority": "Critical",
+      "status": "Pending",
+      "related_findings": [
+        "Unlimited indemnification liability without cap"
+      ]
+    },
+    {
+      "item": "Investigate and verify: Short warranty survival period of 12 months",
+      "category": "Legal",
+      "priority": "High",
+      "status": "Pending",
+      "related_findings": [
+        "Short warranty survival period of 12 months"
+      ]
+    },
+    {
+      "item": "Investigate and verify: Overly broad non-compete restrictions",
+      "category": "Legal",
+      "priority": "High",
+      "status": "Pending",
+      "related_findings": [
+        "Overly broad non-compete restrictions"
+      ]
+    },
+    {
+      "item": "Negotiate a cap on indemnification liability at 1-2x purchase price",
+      "category": "Financial",
+      "priority": "Critical",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Extend warranty survival period to 24 months minimum",
+      "category": "Legal",
+      "priority": "High",
+      "status": "Pending",
+      "related_findings": []
+    },
+    {
+      "item": "Narrow non-compete scope to relevant geographic markets and reduce duration to 3 years",
+      "category": "Legal",
+      "priority": "High",
+      "status": "Pending",
+      "related_findings": []
+    }
+  ],
+  "follow_up_questions": [
+    {
+      "question": "Can you provide more details about: Unlimited indemnification liability without cap?",
+      "category": "Legal",
+      "priority": "Critical",
+      "context": "This finding was identified with Critical severity and requires clarification"
+    },
+    {
+      "question": "Can you provide more details about: Short warranty survival period of 12 months?",
+      "category": "Legal",
+      "priority": "High",
+      "context": "This finding was identified with High severity and requires clarification"
+    },
+    {
+      "question": "Can you provide more details about: Overly broad non-compete restrictions?",
+      "category": "Legal",
+      "priority": "High",
+      "context": "This finding was identified with High severity and requires clarification"
+    },
+    {
+      "question": "Can you provide more details about: Short warranty survival period of 12 months?",
+      "category": "Legal",
+      "priority": "High",
+      "context": "This finding was identified with High severity and requires clarification"
+    },
+    {
+      "question": "Can you provide more details about: Overly broad non-compete restrictions?",
+      "category": "Legal",
+      "priority": "High",
+      "context": "This finding was identified with High severity and requires clarification"
+    }
+  ]
+}

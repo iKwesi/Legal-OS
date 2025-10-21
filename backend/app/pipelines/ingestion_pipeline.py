@@ -1,11 +1,10 @@
 """
-Ingestion Pipeline for document loading, processing, and storage.
+Ingestion Pipeline for document loading, processing, and storage using LangChain patterns.
 """
 
 import logging
-import os
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from uuid import uuid4
 
 from langchain_community.document_loaders import (
@@ -13,9 +12,10 @@ from langchain_community.document_loaders import (
     Docx2txtLoader,
     TextLoader,
 )
+from langchain_core.documents import Document
 
 from app.core.config import settings
-from app.rag.chunking import DocumentChunker
+from app.rag.chunking import DocumentChunker, get_chunker
 from app.rag.vector_store import VectorStore
 
 logger = logging.getLogger(__name__)
@@ -23,22 +23,35 @@ logger = logging.getLogger(__name__)
 
 class IngestionPipeline:
     """
-    Pipeline responsible for document ingestion workflow.
+    Pipeline responsible for document ingestion workflow using LangChain patterns.
 
     Handles:
     - Document loading from various formats (PDF, DOCX, TXT)
     - Text chunking using configured strategy
-    - Embedding generation and storage in vector store
+    - Embedding generation and storage in vector store using LangChain's from_documents()
     """
 
     # Supported file extensions
     SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
-    def __init__(self):
-        """Initialize the Ingestion Pipeline with chunker and vector store."""
-        self.chunker = DocumentChunker()
-        self.vector_store = VectorStore()
-        logger.info("IngestionPipeline initialized")
+    def __init__(
+        self,
+        vector_store: Optional[VectorStore] = None,
+        chunker: Optional[DocumentChunker] = None,
+        use_memory: bool = True,
+    ):
+        """
+        Initialize the Ingestion Pipeline.
+        
+        Args:
+            vector_store: Optional VectorStore instance (creates new if not provided)
+            chunker: Optional DocumentChunker instance (creates new if not provided)
+            use_memory: If True and vector_store not provided, creates in-memory vector store.
+                       Defaults to True for simpler development. Set to False for production.
+        """
+        self.chunker = chunker or get_chunker(strategy="semantic")  # Use semantic by default based on evaluation
+        self.vector_store = vector_store or VectorStore(use_memory=use_memory)
+        logger.info(f"IngestionPipeline initialized (use_memory={use_memory})")
 
     def load_document(self, file_path: str) -> Dict[str, Any]:
         """
@@ -139,7 +152,7 @@ class IngestionPipeline:
         session_id: str,
     ) -> Dict[str, Any]:
         """
-        Complete ingestion pipeline for a single document.
+        Complete ingestion pipeline for a single document using LangChain patterns.
 
         Args:
             file_path: Path to the document file
@@ -170,9 +183,23 @@ class IngestionPipeline:
                     "status": "no_chunks",
                 }
 
-            # Step 3: Store chunks in vector store
-            chunk_ids = self.vector_store.add_chunks(
-                chunks=chunks,
+            # Step 3: Convert chunks to LangChain Documents
+            langchain_docs = []
+            for chunk in chunks:
+                doc = Document(
+                    page_content=chunk["text"],
+                    metadata={
+                        "chunk_id": chunk.get("chunk_id", ""),
+                        "document_id": chunk.get("document_id", ""),
+                        "chunk_index": chunk.get("chunk_index", 0),
+                        **chunk.get("metadata", {}),
+                    },
+                )
+                langchain_docs.append(doc)
+
+            # Step 4: Store in vector store using LangChain's from_documents
+            chunk_ids = self.vector_store.add_documents(
+                documents=langchain_docs,
                 session_id=session_id,
             )
 

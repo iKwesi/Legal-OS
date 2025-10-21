@@ -1,21 +1,17 @@
 """
-Qdrant vector store wrapper for document chunk storage and retrieval.
+LangChain-based Qdrant vector store for Legal-OS.
+
+This module provides vector store operations using LangChain's native
+Qdrant integration for better performance and compatibility.
 """
 
 import logging
 from typing import List, Dict, Any, Optional
-from uuid import uuid4
 
-from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    Distance,
-    VectorParams,
-    PointStruct,
-    Filter,
-    FieldCondition,
-    MatchValue,
-)
+from langchain_community.vectorstores import Qdrant
+from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
+from qdrant_client import QdrantClient
 
 from app.core.config import settings
 
@@ -23,212 +19,201 @@ logger = logging.getLogger(__name__)
 
 
 class VectorStore:
-    """Wrapper for Qdrant vector store operations."""
+    """
+    Wrapper for LangChain's Qdrant vector store.
+    
+    Provides a simplified interface for document storage and retrieval
+    using LangChain's battle-tested Qdrant integration.
+    """
 
-    def __init__(self):
-        """Initialize Qdrant client and embeddings."""
-        self.client = QdrantClient(
-            host=settings.qdrant_host,
-            port=settings.qdrant_port,
-        )
-        self.collection_name = settings.qdrant_collection_name
+    def __init__(self, use_memory: bool = True, collection_name: Optional[str] = None):
+        """
+        Initialize Qdrant vector store.
+        
+        Args:
+            use_memory: If True, use in-memory Qdrant. Otherwise connect to remote.
+                       Defaults to True for simpler development. Set to False for production.
+            collection_name: Optional collection name (defaults to settings)
+        """
+        self.collection_name = collection_name or settings.qdrant_collection_name
         self.embeddings = OpenAIEmbeddings(
             model=settings.embedding_model,
             openai_api_key=settings.openai_api_key,
         )
-        self._ensure_collection_exists()
-
-    def _ensure_collection_exists(self) -> None:
-        """Create collection if it doesn't exist."""
-        try:
-            collections = self.client.get_collections().collections
-            collection_names = [col.name for col in collections]
-
-            if self.collection_name not in collection_names:
-                logger.info(f"Creating collection: {self.collection_name}")
-                self.client.create_collection(
-                    collection_name=self.collection_name,
-                    vectors_config=VectorParams(
-                        size=settings.embedding_dimensions,
-                        distance=Distance.COSINE,
-                    ),
-                )
-                logger.info(f"Collection {self.collection_name} created successfully")
-            else:
-                logger.info(f"Collection {self.collection_name} already exists")
-        except Exception as e:
-            logger.error(f"Error ensuring collection exists: {e}")
-            raise
-
-    def add_chunks(
+        
+        # Create Qdrant client
+        if use_memory:
+            logger.info("Initializing in-memory Qdrant client")
+            self.client = QdrantClient(":memory:")
+            self.location = ":memory:"
+            self.url = None
+        else:
+            logger.info(f"Connecting to Qdrant at {settings.qdrant_host}:{settings.qdrant_port}")
+            self.client = QdrantClient(
+                host=settings.qdrant_host,
+                port=settings.qdrant_port,
+            )
+            self.location = None
+            self.url = f"http://{settings.qdrant_host}:{settings.qdrant_port}"
+        
+        # Initialize empty vectorstore (will be populated via from_documents)
+        self.vectorstore = None
+        
+    def from_documents(
         self,
-        chunks: List[Dict[str, Any]],
-        session_id: str,
+        documents: List[Document],
+        session_id: Optional[str] = None,
+    ) -> "VectorStore":
+        """
+        Create vector store from LangChain documents.
+        
+        Args:
+            documents: List of LangChain Document objects
+            session_id: Optional session ID to add to metadata
+            
+        Returns:
+            Self for method chaining
+        """
+        try:
+            # Add session_id to all document metadata if provided
+            if session_id:
+                for doc in documents:
+                    doc.metadata["session_id"] = session_id
+            
+            logger.info(f"Creating vectorstore from {len(documents)} documents")
+            
+            # Create Qdrant vectorstore from documents
+            if self.location == ":memory:":
+                self.vectorstore = Qdrant.from_documents(
+                    documents,
+                    self.embeddings,
+                    location=":memory:",
+                    collection_name=self.collection_name,
+                )
+            else:
+                self.vectorstore = Qdrant.from_documents(
+                    documents,
+                    self.embeddings,
+                    url=self.url,
+                    collection_name=self.collection_name,
+                )
+            
+            logger.info(f"Vectorstore created with {len(documents)} documents")
+            return self
+            
+        except Exception as e:
+            logger.error(f"Error creating vectorstore from documents: {e}")
+            raise
+    
+    def add_documents(
+        self,
+        documents: List[Document],
+        session_id: Optional[str] = None,
     ) -> List[str]:
         """
-        Add document chunks to the vector store.
-
+        Add documents to existing vector store.
+        
         Args:
-            chunks: List of chunk dictionaries with 'text', 'metadata', etc.
-            session_id: Session identifier to associate chunks with
-
+            documents: List of LangChain Document objects
+            session_id: Optional session ID to add to metadata
+            
         Returns:
-            List of chunk IDs that were added
+            List of document IDs
         """
         try:
-            if not chunks:
-                logger.warning("No chunks provided to add_chunks")
-                return []
-
-            # Extract texts for embedding
-            texts = [chunk["text"] for chunk in chunks]
-
-            # Generate embeddings
-            logger.info(f"Generating embeddings for {len(texts)} chunks")
-            embeddings = self.embeddings.embed_documents(texts)
-
-            # Prepare points for Qdrant
-            points = []
-            chunk_ids = []
-
-            for idx, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-                chunk_id = chunk.get("chunk_id", str(uuid4()))
-                chunk_ids.append(chunk_id)
-
-                # Prepare payload with metadata
-                payload = {
-                    "text": chunk["text"],
-                    "chunk_id": chunk_id,
-                    "document_id": chunk.get("document_id", ""),
-                    "chunk_index": chunk.get("chunk_index", idx),
-                    "session_id": session_id,
-                    "metadata": chunk.get("metadata", {}),
-                }
-
-                points.append(
-                    PointStruct(
-                        id=chunk_id,
-                        vector=embedding,
-                        payload=payload,
-                    )
-                )
-
-            # Upload to Qdrant
-            logger.info(f"Uploading {len(points)} points to Qdrant")
-            self.client.upsert(
-                collection_name=self.collection_name,
-                points=points,
-            )
-
-            logger.info(f"Successfully added {len(chunk_ids)} chunks to vector store")
-            return chunk_ids
-
+            if not self.vectorstore:
+                # If vectorstore doesn't exist, create it
+                self.from_documents(documents, session_id)
+                return [doc.metadata.get("chunk_id", str(i)) for i, doc in enumerate(documents)]
+            
+            # Add session_id to metadata if provided
+            if session_id:
+                for doc in documents:
+                    doc.metadata["session_id"] = session_id
+            
+            logger.info(f"Adding {len(documents)} documents to vectorstore")
+            ids = self.vectorstore.add_documents(documents)
+            logger.info(f"Added {len(ids)} documents")
+            return ids
+            
         except Exception as e:
-            logger.error(f"Error adding chunks to vector store: {e}")
+            logger.error(f"Error adding documents: {e}")
             raise
-
-    def search(
+    
+    def as_retriever(self, search_kwargs: Optional[Dict[str, Any]] = None):
+        """
+        Get LangChain retriever interface.
+        
+        Args:
+            search_kwargs: Optional search parameters (e.g., {"k": 10})
+            
+        Returns:
+            LangChain retriever object
+        """
+        if not self.vectorstore:
+            raise ValueError("Vectorstore not initialized. Call from_documents() first.")
+        
+        # Default to k=10 based on evaluation results
+        kwargs = search_kwargs or {"k": 10}
+        logger.info(f"Creating retriever with search_kwargs: {kwargs}")
+        
+        return self.vectorstore.as_retriever(search_kwargs=kwargs)
+    
+    def similarity_search(
         self,
         query: str,
-        session_id: Optional[str] = None,
-        top_k: int = 5,
-        score_threshold: Optional[float] = None,
-    ) -> List[Dict[str, Any]]:
+        k: int = 10,
+        filter: Optional[Dict[str, Any]] = None,
+    ) -> List[Document]:
         """
-        Search for similar chunks in the vector store.
-
+        Perform similarity search.
+        
         Args:
-            query: Search query text
-            session_id: Optional session ID to filter results
-            top_k: Number of results to return
-            score_threshold: Optional minimum similarity score
-
+            query: Search query
+            k: Number of results (default 10 based on evaluation)
+            filter: Optional metadata filter
+            
         Returns:
-            List of matching chunks with scores and metadata
+            List of matching documents
         """
+        if not self.vectorstore:
+            raise ValueError("Vectorstore not initialized. Call from_documents() first.")
+        
+        return self.vectorstore.similarity_search(query, k=k, filter=filter)
+    
+    def get_all_documents(self, session_id: Optional[str] = None) -> List[Document]:
+        """
+        Get all documents from the vector store.
+        
+        Args:
+            session_id: Optional session ID to filter by
+            
+        Returns:
+            List of all documents
+        """
+        if not self.vectorstore:
+            logger.warning("Vectorstore not initialized, returning empty list")
+            return []
+        
         try:
-            # Generate query embedding
-            logger.info(f"Searching for: {query[:100]}...")
-            query_embedding = self.embeddings.embed_query(query)
-
-            # Prepare filter if session_id provided
-            query_filter = None
-            if session_id:
-                query_filter = Filter(
-                    must=[
-                        FieldCondition(
-                            key="session_id",
-                            match=MatchValue(value=session_id),
-                        )
-                    ]
-                )
-
-            # Search in Qdrant
-            search_results = self.client.search(
-                collection_name=self.collection_name,
-                query_vector=query_embedding,
-                query_filter=query_filter,
-                limit=top_k,
-                score_threshold=score_threshold or settings.similarity_threshold,
+            # Get collection info to know how many documents exist
+            collection_info = self.client.get_collection(self.collection_name)
+            total_docs = collection_info.points_count
+            
+            if total_docs == 0:
+                return []
+            
+            # Use similarity search with high k to get all docs
+            filter_dict = {"session_id": session_id} if session_id else None
+            results = self.vectorstore.similarity_search(
+                query="",  # Empty query
+                k=total_docs,
+                filter=filter_dict,
             )
-
-            # Format results
-            results = []
-            for result in search_results:
-                results.append({
-                    "chunk_id": result.payload.get("chunk_id"),
-                    "document_id": result.payload.get("document_id"),
-                    "text": result.payload.get("text"),
-                    "score": result.score,
-                    "metadata": result.payload.get("metadata", {}),
-                    "chunk_index": result.payload.get("chunk_index"),
-                })
-
-            logger.info(f"Found {len(results)} matching chunks")
+            
+            logger.info(f"Retrieved {len(results)} documents from vectorstore")
             return results
-
+            
         except Exception as e:
-            logger.error(f"Error searching vector store: {e}")
-            raise
-
-    def delete_session(self, session_id: str) -> bool:
-        """
-        Delete all chunks associated with a session.
-
-        Args:
-            session_id: Session identifier
-
-        Returns:
-            True if deletion was successful
-        """
-        try:
-            logger.info(f"Deleting chunks for session: {session_id}")
-            self.client.delete(
-                collection_name=self.collection_name,
-                points_selector=Filter(
-                    must=[
-                        FieldCondition(
-                            key="session_id",
-                            match=MatchValue(value=session_id),
-                        )
-                    ]
-                ),
-            )
-            logger.info(f"Successfully deleted chunks for session: {session_id}")
-            return True
-        except Exception as e:
-            logger.error(f"Error deleting session chunks: {e}")
-            raise
-
-    def get_collection_info(self) -> Dict[str, Any]:
-        """Get information about the collection."""
-        try:
-            info = self.client.get_collection(self.collection_name)
-            return {
-                "name": info.config.params.vectors.size,
-                "vectors_count": info.vectors_count,
-                "points_count": info.points_count,
-            }
-        except Exception as e:
-            logger.error(f"Error getting collection info: {e}")
-            raise
+            logger.error(f"Error getting all documents: {e}")
+            return []

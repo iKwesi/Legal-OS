@@ -4,7 +4,7 @@
 **Submission Date:** October 21, 2025  
 **GitHub Repository:** [Legal-OS](https://github.com/iKwesi/Legal-OS)
 
-**Loom Video:** [Loom Video](https://)
+**Loom Video:** [Loom Video](https://www.loom.com/share/51b2c355bad9448e828bc7bcfc805d2f?sid=38810de1-ca9e-4be6-b101-8d98b530105b)
 
 ---
 

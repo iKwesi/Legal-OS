@@ -1,0 +1,152 @@
+[
+  {
+    "chunking_strategy": "naive",
+    "retriever_type": "naive",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.6040432098668506,
+      "context_recall": 0.135,
+      "faithfulness": 0.8746625923096512,
+      "answer_relevancy": 0.2868100320578084
+    },
+    "execution_time_seconds": 84.05716729164124,
+    "configuration": "Naive + Vector Similarity"
+  },
+  {
+    "chunking_strategy": "naive",
+    "retriever_type": "bm25",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.5554642227159439,
+      "context_recall": 0.21000000000000002,
+      "faithfulness": 0.91875,
+      "answer_relevancy": 0.1838682904201539
+    },
+    "execution_time_seconds": 67.74601292610168,
+    "configuration": "Naive + BM25 Keyword"
+  },
+  {
+    "chunking_strategy": "naive",
+    "retriever_type": "multiquery",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.5755121674781372,
+      "context_recall": 0.21833333333333332,
+      "faithfulness": 0.8671497584541064,
+      "answer_relevancy": 0.28866888393687284
+    },
+    "execution_time_seconds": 117.35227108001709,
+    "configuration": "Naive + Multi-Query"
+  },
+  {
+    "chunking_strategy": "naive",
+    "retriever_type": "ensemble",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.6321466990920087,
+      "context_recall": 0.25166666666666665,
+      "faithfulness": 0.8655555555555555,
+      "answer_relevancy": 0.37791891133448485
+    },
+    "execution_time_seconds": 147.44487404823303,
+    "configuration": "Naive + Ensemble (Vector+BM25+MultiQuery)"
+  },
+  {
+    "chunking_strategy": "naive",
+    "retriever_type": "contextual_compression_cohere",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.6676615646082249,
+      "context_recall": 0.21833333333333332,
+      "faithfulness": 0.7722222222222223,
+      "answer_relevancy": 0.28696825878237586
+    },
+    "execution_time_seconds": 79.77191019058228,
+    "configuration": "Naive + Cohere Reranking"
+  },
+  {
+    "chunking_strategy": "semantic",
+    "retriever_type": "naive",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.6222921075738816,
+      "context_recall": 0.11000000000000001,
+      "faithfulness": 0.7912280701754386,
+      "answer_relevancy": 0.2886688839368729
+    },
+    "execution_time_seconds": 76.26405692100525,
+    "configuration": "Semantic + Vector Similarity"
+  },
+  {
+    "chunking_strategy": "semantic",
+    "retriever_type": "bm25",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.5535109599290776,
+      "context_recall": 0.16,
+      "faithfulness": 0.9125,
+      "answer_relevancy": 0.1893620711639909
+    },
+    "execution_time_seconds": 67.03010106086731,
+    "configuration": "Semantic + BM25 Keyword"
+  },
+  {
+    "chunking_strategy": "semantic",
+    "retriever_type": "multiquery",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.5860250355631396,
+      "context_recall": 0.14333333333333334,
+      "faithfulness": 0.8535650623885918,
+      "answer_relevancy": 0.2868100320578084
+    },
+    "execution_time_seconds": 106.33274292945862,
+    "configuration": "Semantic + Multi-Query"
+  },
+  {
+    "chunking_strategy": "semantic",
+    "retriever_type": "ensemble",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.5456612445748794,
+      "context_recall": 0.32666666666666666,
+      "faithfulness": 0.9473684210526315,
+      "answer_relevancy": 0.3770637349540781
+    },
+    "execution_time_seconds": 136.89016389846802,
+    "configuration": "Semantic + Ensemble (Vector+BM25+MultiQuery)"
+  },
+  {
+    "chunking_strategy": "semantic",
+    "retriever_type": "contextual_compression_cohere",
+    "top_k": 10,
+    "num_documents": 345,
+    "num_samples": 10,
+    "metrics": {
+      "context_precision": 0.6308289241509348,
+      "context_recall": 0.26,
+      "faithfulness": 0.8144444444444444,
+      "answer_relevancy": 0.3795272263290901
+    },
+    "execution_time_seconds": 85.27577090263367,
+    "configuration": "Semantic + Cohere Reranking"
+  }
+]

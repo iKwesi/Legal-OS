@@ -1,0 +1,23 @@
+{
+  "document_id": "31da81a9-e221-43fa-a03b-03e86eefb42e",
+  "document_name": "Freedom_Final_Asset_Agreement.pdf",
+  "processing_times": {
+    "sequential_total": 107.56082201004028,
+    "orchestrated_total": 120.95882415771484,
+    "ingestion": 8.91346287727356,
+    "clause_extraction": 37.73656606674194,
+    "risk_scoring": 27.409609079360962,
+    "summary": 22.979708194732666,
+    "checklist": 8.13600492477417
+  },
+  "results": {
+    "clauses_extracted": 3,
+    "red_flags": 5,
+    "overall_risk_score": 65,
+    "overall_risk_category": "High",
+    "findings": 0,
+    "recommendations": 0,
+    "checklist_items": 20,
+    "follow_up_questions": 0
+  }
+}

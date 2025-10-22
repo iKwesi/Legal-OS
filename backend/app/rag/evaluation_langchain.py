@@ -102,8 +102,8 @@ Please provide a clear, accurate answer based on the context above."""
         }
         chunker = get_chunker(strategy=chunking_strategy, **params)
         
-        # Load documents
-        data_dir = Path("../data")
+        # Load documents - use absolute path
+        data_dir = Path(__file__).parent.parent.parent / "data"
         pdf_files = list(data_dir.glob("*.pdf"))
         
         if not pdf_files:
@@ -247,6 +247,432 @@ Please provide a clear, accurate answer based on the context above."""
         result = {
             "chunking_strategy": chunking_strategy,
             "retriever_type": "naive",
+            "top_k": top_k,
+            "num_documents": len(documents),
+            "num_samples": len(sgd_df),
+            "metrics": metrics,
+            "execution_time_seconds": execution_time,
+        }
+        
+        logger.info(f"Evaluation complete in {execution_time:.2f}s")
+        logger.info(f"Metrics: {metrics}")
+        
+        return result
+    
+    def evaluate_multiquery_retrieval(
+        self,
+        chunking_strategy: ChunkingStrategy = "naive",
+        chunking_params: Optional[Dict[str, Any]] = None,
+        top_k: int = 10,
+    ) -> Dict[str, Any]:
+        """
+        Evaluate Multi-Query retrieval (generates multiple query variations).
+        
+        Args:
+            chunking_strategy: Chunking strategy to use
+            chunking_params: Parameters for chunking
+            top_k: Number of chunks to retrieve
+            
+        Returns:
+            Dictionary with evaluation results
+        """
+        from langchain.retrievers.multi_query import MultiQueryRetriever
+        
+        start_time = time.time()
+        
+        logger.info(f"Evaluating {chunking_strategy} chunking with Multi-Query retrieval (k={top_k})")
+        
+        # Load and chunk documents
+        documents = self.load_and_chunk_documents(chunking_strategy, chunking_params)
+        
+        if not documents:
+            raise ValueError("No documents loaded for evaluation")
+        
+        # Create vectorstore
+        logger.info("Creating in-memory vectorstore")
+        vectorstore = Qdrant.from_documents(
+            documents,
+            self.embeddings,
+            location=":memory:",
+            collection_name=f"eval_{chunking_strategy}_multiquery",
+        )
+        
+        # Create base retriever
+        base_retriever = vectorstore.as_retriever(search_kwargs={"k": top_k})
+        
+        # Create Multi-Query retriever
+        logger.info("Creating Multi-Query retriever")
+        retriever = MultiQueryRetriever.from_llm(
+            retriever=base_retriever,
+            llm=self.llm,
+        )
+        
+        # Create RAG chain
+        rag_chain = (
+            {"context": itemgetter("question") | retriever, "question": itemgetter("question")}
+            | RunnablePassthrough.assign(context=itemgetter("context"))
+            | {"response": self.rag_prompt | self.llm, "context": itemgetter("context")}
+        )
+        
+        # Load SGD
+        sgd_df = self.load_sgd()
+        
+        # Run evaluation
+        questions = []
+        answers = []
+        contexts = []
+        ground_truths = []
+        
+        logger.info(f"Running RAG chain on {len(sgd_df)} questions")
+        
+        for _, row in sgd_df.iterrows():
+            question = row["user_input"]
+            ground_truth = row["reference"]
+            
+            try:
+                # Invoke RAG chain
+                result = rag_chain.invoke({"question": question})
+                
+                # Extract results
+                answer = result["response"].content if hasattr(result["response"], "content") else str(result["response"])
+                context_docs = result["context"]
+                
+                questions.append(question)
+                answers.append(answer)
+                contexts.append([doc.page_content for doc in context_docs])
+                ground_truths.append(ground_truth)
+            except Exception as e:
+                logger.warning(f"Error processing question: {e}")
+                # Add empty results to maintain alignment
+                questions.append(question)
+                answers.append("")
+                contexts.append([])
+                ground_truths.append(ground_truth)
+        
+        # Create RAGAS dataset
+        eval_dataset = Dataset.from_dict({
+            "question": questions,
+            "answer": answers,
+            "contexts": contexts,
+            "ground_truth": ground_truths,
+        })
+        
+        # Evaluate with RAGAS
+        logger.info("Running RAGAS evaluation")
+        ragas_result = evaluate(
+            eval_dataset,
+            metrics=[
+                context_precision,
+                context_recall,
+                faithfulness,
+                answer_relevancy,
+            ],
+        )
+        
+        # Extract metrics
+        metrics = {}
+        for metric_name in ["context_precision", "context_recall", "faithfulness", "answer_relevancy"]:
+            value = ragas_result[metric_name]
+            if isinstance(value, list):
+                metrics[metric_name] = float(sum(value) / len(value)) if value else 0.0
+            else:
+                metrics[metric_name] = float(value)
+        
+        execution_time = time.time() - start_time
+        
+        result = {
+            "chunking_strategy": chunking_strategy,
+            "retriever_type": "multiquery",
+            "top_k": top_k,
+            "num_documents": len(documents),
+            "num_samples": len(sgd_df),
+            "metrics": metrics,
+            "execution_time_seconds": execution_time,
+        }
+        
+        logger.info(f"Evaluation complete in {execution_time:.2f}s")
+        logger.info(f"Metrics: {metrics}")
+        
+        return result
+    
+    def evaluate_ensemble_retrieval(
+        self,
+        chunking_strategy: ChunkingStrategy = "naive",
+        chunking_params: Optional[Dict[str, Any]] = None,
+        top_k: int = 10,
+    ) -> Dict[str, Any]:
+        """
+        Evaluate Ensemble retrieval (combines Vector + BM25 + Multi-Query with weighted scoring).
+        
+        Args:
+            chunking_strategy: Chunking strategy to use
+            chunking_params: Parameters for chunking
+            top_k: Number of chunks to retrieve
+            
+        Returns:
+            Dictionary with evaluation results
+        """
+        from langchain.retrievers import EnsembleRetriever
+        from langchain.retrievers.multi_query import MultiQueryRetriever
+        
+        start_time = time.time()
+        
+        logger.info(f"Evaluating {chunking_strategy} chunking with Ensemble retrieval (Vector+BM25+MultiQuery, k={top_k})")
+        
+        # Load and chunk documents
+        documents = self.load_and_chunk_documents(chunking_strategy, chunking_params)
+        
+        if not documents:
+            raise ValueError("No documents loaded for evaluation")
+        
+        # Create vectorstore
+        logger.info("Creating in-memory vectorstore")
+        vectorstore = Qdrant.from_documents(
+            documents,
+            self.embeddings,
+            location=":memory:",
+            collection_name=f"eval_{chunking_strategy}_ensemble",
+        )
+        
+        # Create vector retriever
+        vector_retriever = vectorstore.as_retriever(search_kwargs={"k": top_k})
+        
+        # Create BM25 retriever
+        logger.info("Creating BM25 retriever")
+        bm25_retriever = BM25Retriever.from_documents(documents)
+        bm25_retriever.k = top_k
+        
+        # Create Multi-Query retriever
+        logger.info("Creating Multi-Query retriever")
+        base_retriever_mq = vectorstore.as_retriever(search_kwargs={"k": top_k})
+        multiquery_retriever = MultiQueryRetriever.from_llm(
+            retriever=base_retriever_mq,
+            llm=self.llm,
+        )
+        
+        # Create Ensemble retriever (equal weights for all 3)
+        logger.info("Creating Ensemble retriever (Vector + BM25 + Multi-Query)")
+        retriever = EnsembleRetriever(
+            retrievers=[vector_retriever, bm25_retriever, multiquery_retriever],
+            weights=[0.33, 0.33, 0.34],
+        )
+        
+        # Create RAG chain
+        rag_chain = (
+            {"context": itemgetter("question") | retriever, "question": itemgetter("question")}
+            | RunnablePassthrough.assign(context=itemgetter("context"))
+            | {"response": self.rag_prompt | self.llm, "context": itemgetter("context")}
+        )
+        
+        # Load SGD
+        sgd_df = self.load_sgd()
+        
+        # Run evaluation
+        questions = []
+        answers = []
+        contexts = []
+        ground_truths = []
+        
+        logger.info(f"Running RAG chain on {len(sgd_df)} questions")
+        
+        for _, row in sgd_df.iterrows():
+            question = row["user_input"]
+            ground_truth = row["reference"]
+            
+            # Invoke RAG chain
+            result = rag_chain.invoke({"question": question})
+            
+            # Extract results
+            answer = result["response"].content if hasattr(result["response"], "content") else str(result["response"])
+            context_docs = result["context"]
+            
+            questions.append(question)
+            answers.append(answer)
+            contexts.append([doc.page_content for doc in context_docs])
+            ground_truths.append(ground_truth)
+        
+        # Create RAGAS dataset
+        eval_dataset = Dataset.from_dict({
+            "question": questions,
+            "answer": answers,
+            "contexts": contexts,
+            "ground_truth": ground_truths,
+        })
+        
+        # Evaluate with RAGAS
+        logger.info("Running RAGAS evaluation")
+        ragas_result = evaluate(
+            eval_dataset,
+            metrics=[
+                context_precision,
+                context_recall,
+                faithfulness,
+                answer_relevancy,
+            ],
+        )
+        
+        # Extract metrics
+        metrics = {}
+        for metric_name in ["context_precision", "context_recall", "faithfulness", "answer_relevancy"]:
+            value = ragas_result[metric_name]
+            if isinstance(value, list):
+                metrics[metric_name] = float(sum(value) / len(value)) if value else 0.0
+            else:
+                metrics[metric_name] = float(value)
+        
+        execution_time = time.time() - start_time
+        
+        result = {
+            "chunking_strategy": chunking_strategy,
+            "retriever_type": "ensemble",
+            "top_k": top_k,
+            "num_documents": len(documents),
+            "num_samples": len(sgd_df),
+            "metrics": metrics,
+            "execution_time_seconds": execution_time,
+        }
+        
+        logger.info(f"Evaluation complete in {execution_time:.2f}s")
+        logger.info(f"Metrics: {metrics}")
+        
+        return result
+    
+    def evaluate_contextual_compression_retrieval(
+        self,
+        chunking_strategy: ChunkingStrategy = "naive",
+        chunking_params: Optional[Dict[str, Any]] = None,
+        top_k: int = 10,
+        cohere_api_key: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Evaluate Contextual Compression retrieval with Cohere reranking.
+        
+        Args:
+            chunking_strategy: Chunking strategy to use
+            chunking_params: Parameters for chunking
+            top_k: Number of chunks to retrieve
+            cohere_api_key: Cohere API key for reranking
+            
+        Returns:
+            Dictionary with evaluation results
+        """
+        from langchain.retrievers import ContextualCompressionRetriever
+        from langchain_cohere import CohereRerank
+        
+        start_time = time.time()
+        
+        logger.info(f"Evaluating {chunking_strategy} chunking with Contextual Compression (Cohere) retrieval (k={top_k})")
+        
+        if not cohere_api_key:
+            raise ValueError("Cohere API key required for contextual compression retrieval")
+        
+        # Load and chunk documents
+        documents = self.load_and_chunk_documents(chunking_strategy, chunking_params)
+        
+        if not documents:
+            raise ValueError("No documents loaded for evaluation")
+        
+        # Create vectorstore
+        logger.info("Creating in-memory vectorstore")
+        vectorstore = Qdrant.from_documents(
+            documents,
+            self.embeddings,
+            location=":memory:",
+            collection_name=f"eval_{chunking_strategy}_compression",
+        )
+        
+        # Create base retriever (retrieve more for reranking)
+        base_retriever = vectorstore.as_retriever(search_kwargs={"k": top_k * 2})
+        
+        # Create Cohere reranker
+        logger.info("Creating Cohere reranker")
+        compressor = CohereRerank(
+            cohere_api_key=cohere_api_key,
+            model="rerank-english-v3.0",
+            top_n=top_k,
+        )
+        
+        # Create Contextual Compression retriever
+        retriever = ContextualCompressionRetriever(
+            base_compressor=compressor,
+            base_retriever=base_retriever,
+        )
+        
+        # Create RAG chain
+        rag_chain = (
+            {"context": itemgetter("question") | retriever, "question": itemgetter("question")}
+            | RunnablePassthrough.assign(context=itemgetter("context"))
+            | {"response": self.rag_prompt | self.llm, "context": itemgetter("context")}
+        )
+        
+        # Load SGD
+        sgd_df = self.load_sgd()
+        
+        # Run evaluation
+        questions = []
+        answers = []
+        contexts = []
+        ground_truths = []
+        
+        logger.info(f"Running RAG chain on {len(sgd_df)} questions")
+        
+        for _, row in sgd_df.iterrows():
+            question = row["user_input"]
+            ground_truth = row["reference"]
+            
+            try:
+                # Invoke RAG chain
+                result = rag_chain.invoke({"question": question})
+                
+                # Extract results
+                answer = result["response"].content if hasattr(result["response"], "content") else str(result["response"])
+                context_docs = result["context"]
+                
+                questions.append(question)
+                answers.append(answer)
+                contexts.append([doc.page_content for doc in context_docs])
+                ground_truths.append(ground_truth)
+            except Exception as e:
+                logger.warning(f"Error processing question: {e}")
+                questions.append(question)
+                answers.append("")
+                contexts.append([])
+                ground_truths.append(ground_truth)
+        
+        # Create RAGAS dataset
+        eval_dataset = Dataset.from_dict({
+            "question": questions,
+            "answer": answers,
+            "contexts": contexts,
+            "ground_truth": ground_truths,
+        })
+        
+        # Evaluate with RAGAS
+        logger.info("Running RAGAS evaluation")
+        ragas_result = evaluate(
+            eval_dataset,
+            metrics=[
+                context_precision,
+                context_recall,
+                faithfulness,
+                answer_relevancy,
+            ],
+        )
+        
+        # Extract metrics
+        metrics = {}
+        for metric_name in ["context_precision", "context_recall", "faithfulness", "answer_relevancy"]:
+            value = ragas_result[metric_name]
+            if isinstance(value, list):
+                metrics[metric_name] = float(sum(value) / len(value)) if value else 0.0
+            else:
+                metrics[metric_name] = float(value)
+        
+        execution_time = time.time() - start_time
+        
+        result = {
+            "chunking_strategy": chunking_strategy,
+            "retriever_type": "contextual_compression_cohere",
             "top_k": top_k,
             "num_documents": len(documents),
             "num_samples": len(sgd_df),

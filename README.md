@@ -1,451 +1,492 @@
 # Legal-OS
 
-AI-powered legal document processing system with RAG pipeline and multi-agent orchestration for M&A due diligence analysis.
+AI-powered M&A due diligence system with multi-agent orchestration, RAG pipeline, and comprehensive RAGAS evaluation.
 
-## 🎯 Features
+## 🎯 Overview
 
-- **📄 Document Ingestion**: Upload and process legal documents (PDF) with intelligent chunking
-- **🤖 Multi-Agent System**: Specialized AI agents for different analysis tasks:
-  - Clause Extraction Agent
-  - Risk Scoring Agent
-  - Summary Agent
-  - Provenance/Source Tracking Agent
-  - Checklist Agent
-- **🔍 RAG Pipeline**: Advanced retrieval-augmented generation with multiple retriever strategies
-- **💬 Interactive Chat**: Ask questions about uploaded documents with context-aware responses
-- **📊 Comprehensive Analysis**: Generate detailed reports, risk assessments, and checklists
-- **🎨 Modern UI**: Clean, responsive interface built with Next.js and Shadcn/ui
+Legal-OS analyzes M&A legal documents using specialized AI agents to extract clauses, score risks, generate summaries, track sources, and create actionable checklists.
+
+**Key Features:**
+- 🤖 **5 Specialized AI Agents** - Clause extraction, risk scoring, summary, source tracking, checklist
+- 🔍 **Advanced RAG Pipeline** - 5 retriever strategies with RAGAS evaluation
+- 📊 **Comprehensive Evaluation** - 10 configurations tested (2 chunking × 5 retrievers)
+- 💬 **Interactive Chat** - Ask questions about uploaded documents
+- 📈 **LangSmith Tracing** - Optional monitoring and debugging
+- 🎨 **Modern UI** - Next.js frontend with Shadcn/ui components
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TB
+    subgraph "User Interface"
+        User[👤 User]
+        Frontend[Next.js Frontend<br/>TypeScript + Tailwind + Shadcn/ui]
+    end
+
+    subgraph "API Layer"
+        API[FastAPI Backend<br/>REST API]
+        Upload[/api/v1/upload]
+        Query[/api/v1/query]
+        Chat[/api/v1/chat]
+        Orchestrate[/api/v1/orchestrate]
+    end
+
+    subgraph "Document Processing Pipeline"
+        Ingestion[Ingestion Pipeline<br/>PDF Processing]
+        Chunking[Chunking Strategy<br/>Naive/Semantic]
+        Embedding[OpenAI Embeddings<br/>text-embedding-3-small]
+        VectorStore[(Qdrant Vector Store<br/>In-Memory/Docker)]
+    end
+
+    subgraph "RAG Components"
+        Retrievers[5 Retriever Strategies]
+        VectorSim[Vector Similarity]
+        BM25[BM25 Keyword]
+        MultiQuery[Multi-Query]
+        Ensemble[Ensemble]
+        Rerank[Cohere Reranking]
+        
+        Retrievers --> VectorSim
+        Retrievers --> BM25
+        Retrievers --> MultiQuery
+        Retrievers --> Ensemble
+        Retrievers --> Rerank
+    end
+
+    subgraph "LangGraph Orchestration"
+        Supervisor[Supervisor Agent<br/>ReAct Pattern]
+        
+        subgraph "Specialized Agents"
+            Agent1[1️⃣ Clause Extraction<br/>Extract M&A clauses]
+            Agent2[2️⃣ Risk Scoring<br/>Score 0-100]
+            Agent3[3️⃣ Summary<br/>Generate memo]
+            Agent4[4️⃣ Provenance<br/>Track sources]
+            Agent5[5️⃣ Checklist<br/>Follow-up questions]
+        end
+        
+        Supervisor -->|Route| Agent1
+        Supervisor -->|Route| Agent2
+        Supervisor -->|Route| Agent3
+        Supervisor -->|Route| Agent4
+        Supervisor -->|Route| Agent5
+        
+        Agent1 -->|Complete| Supervisor
+        Agent2 -->|Complete| Supervisor
+        Agent3 -->|Complete| Supervisor
+        Agent4 -->|Complete| Supervisor
+        Agent5 -->|Complete| Supervisor
+    end
+
+    subgraph "External Services"
+        OpenAI[OpenAI API<br/>gpt-4o-mini]
+        Cohere[Cohere API<br/>Reranking]
+        LangSmith[LangSmith<br/>Tracing & Monitoring]
+    end
+
+    subgraph "Evaluation Framework"
+        RAGAS[RAGAS Evaluation<br/>10 Configurations]
+        Golden[Golden Dataset<br/>Test Cases]
+        Metrics[Metrics: Precision, Recall<br/>Faithfulness, Relevancy]
+    end
+
+    subgraph "Development Tools"
+        Notebooks[Jupyter Notebooks<br/>8 Demo Scripts]
+        Tests[Pytest Suite<br/>Unit & Integration]
+    end
+
+    %% User Flow
+    User -->|Interact| Frontend
+    Frontend -->|HTTP| API
+    
+    %% API Routes
+    API --> Upload
+    API --> Query
+    API --> Chat
+    API --> Orchestrate
+    
+    %% Document Processing
+    Upload --> Ingestion
+    Ingestion --> Chunking
+    Chunking --> Embedding
+    Embedding --> VectorStore
+    
+    %% Query Flow
+    Query --> Retrievers
+    Chat --> Retrievers
+    Retrievers --> VectorStore
+    
+    %% Orchestration Flow
+    Orchestrate --> Supervisor
+    Agent1 --> Retrievers
+    Agent2 --> Agent1
+    Agent3 --> Agent2
+    Agent4 --> Agent3
+    Agent5 --> Agent4
+    
+    %% External Dependencies
+    Embedding -.->|API Call| OpenAI
+    Agent1 -.->|LLM| OpenAI
+    Agent2 -.->|LLM| OpenAI
+    Agent3 -.->|LLM| OpenAI
+    Agent5 -.->|LLM| OpenAI
+    Rerank -.->|API Call| Cohere
+    Supervisor -.->|Trace| LangSmith
+    
+    %% Evaluation
+    Retrievers --> RAGAS
+    Golden --> RAGAS
+    RAGAS --> Metrics
+    
+    %% Development
+    Notebooks -.->|Test| API
+    Tests -.->|Validate| API
+
+    %% Styling
+    classDef frontend fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef storage fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef eval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    
+    class Frontend,User frontend
+    class API,Upload,Query,Chat,Orchestrate,Ingestion,Chunking,Embedding backend
+    class Supervisor,Agent1,Agent2,Agent3,Agent4,Agent5 agent
+    class VectorStore,Retrievers,VectorSim,BM25,MultiQuery,Ensemble,Rerank storage
+    class OpenAI,Cohere,LangSmith external
+    class RAGAS,Golden,Metrics,Notebooks,Tests eval
+```
+
+### Architecture Highlights
+
+**🔄 Multi-Agent Orchestration (LangGraph)**
+- Supervisor agent coordinates 5 specialized agents using ReAct pattern
+- Sequential workflow: Ingestion → Clause Extraction → Risk Scoring → Summary → Provenance → Checklist
+- State management with checkpointing for reliability
+
+**🔍 Advanced RAG Pipeline**
+- Swappable retriever architecture (5 strategies)
+- Dual chunking strategies (Naive vs Semantic)
+- RAGAS evaluation framework with 10 configurations
+- Best-in-class retriever selection based on metrics
+
+**🎯 Production-Ready Design**
+- FastAPI backend with async support
+- In-memory Qdrant for development
+- Docker Compose for production deployment
+- Comprehensive test coverage with pytest
+
+**📊 Observability**
+- LangSmith integration for tracing
+- Detailed logging throughout pipeline
+- Performance metrics tracking
+- Error handling with fallback logic
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Docker & Docker Compose** (recommended for easiest setup)
-- **Python 3.11+** (for local development)
-- **Node.js 20+** (for local development)
+- **Python 3.13+**
 - **[uv](https://github.com/astral-sh/uv)** - Fast Python package manager
-- **OpenAI API Key** (required for LLM operations)
+- **Node.js 20+** (for frontend)
+- **OpenAI API Key** (required)
+- **Cohere API Key** (optional - for reranking)
+- **LangSmith API Key** (optional - for tracing)
 
-### Running with Docker (Recommended)
-
-```bash
-# 1. Clone the repository
-git clone <repository-url>
-cd Legal-OS
-
-# 2. Set up environment variables
-cp backend/.env.example backend/.env
-# Edit backend/.env and add your OPENAI_API_KEY
-
-# 3. Build and start all services
-make build
-make start
-
-# 4. View logs (optional)
-make logs
-```
-
-Access the services:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **Qdrant Dashboard**: http://localhost:6333/dashboard
-
-### Local Development (Fast Iteration)
-
-For faster development without Docker rebuilds:
+### Setup (3 Steps)
 
 ```bash
-# 1. Install all dependencies
-make install-all
+# 1. Install backend dependencies
+cd backend
+uv sync
 
-# 2. Set up environment variables
-cp backend/.env.example backend/.env
-# Edit backend/.env and add your OPENAI_API_KEY
+# 2. Configure API keys
+cp .env.example .env
+# Edit .env and add your API keys
 
-# 3. Start Qdrant in Docker (required)
-make qdrant
-
-# 4. Start backend and frontend locally
-make dev-all
+# 3. Run the system
+uv run python main.py
 ```
 
-This runs the backend and frontend with hot-reload enabled for rapid development.
+Backend runs on: http://localhost:8000
+API docs: http://localhost:8000/docs
+
+### Frontend Setup (Optional)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs on: http://localhost:3000
+
+## 📊 Jupyter Notebooks
+
+### Comprehensive Demo (Recommended)
+
+```bash
+# Open in Jupyter
+cd notebooks
+jupyter notebook combined_notebooks_v2.ipynb
+
+# Or run as Python script
+cd backend
+uv run python ../notebooks/combined_notebooks.py
+```
+
+**Features:**
+- Complete pipeline demonstration
+- RAGAS evaluation (10 configurations)
+- Ranked comparison table with medals 🥇🥈🥉
+- Agent graph visualizations
+- LangSmith tracing integration
+- ~20-25 minutes runtime
+
+### Individual Notebooks
+
+- `E01_Pipeline_Foundation.py` - Document ingestion & RAG
+- `E02_Evaluation_LangChain.py` - Basic RAG evaluation
+- `E03_Clause_Extraction_Agent.py` - Clause extraction demo
+- `E04_Risk_Scoring_Agent.py` - Risk scoring demo
+- `E05_Summary_Agent.py` - Summary generation demo
+- `E06_Source_Tracker.py` - Source tracking demo
+- `E07_Checklist_Agent.py` - Checklist generation demo
+- `E08_Orchestration_Demo.py` - End-to-end orchestration
+
+## 🛠️ Technology Stack
+
+### Backend
+- **Python 3.13** with **uv** package manager
+- **FastAPI** - Web framework
+- **LangChain 0.3.x** - Agent framework (stable)
+- **LangGraph** - Agent orchestration
+- **RAGAS** - RAG evaluation
+- **Qdrant** - Vector database (in-memory for dev)
+- **OpenAI** - LLM (gpt-4o-mini) & embeddings (text-embedding-3-small)
+- **Cohere** - Reranking (optional)
+
+### Frontend
+- **Next.js 15** - React framework
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+- **Shadcn/ui** - UI components
 
 ## 📁 Project Structure
 
 ```
 Legal-OS/
-├── backend/              # Python/FastAPI backend
+├── backend/
 │   ├── app/
-│   │   ├── agents/      # AI agents (clause extraction, risk scoring, etc.)
-│   │   ├── api/         # REST API endpoints
-│   │   │   └── v1/
-│   │   │       └── endpoints/  # Chat, query, upload endpoints
-│   │   ├── core/        # Configuration and utilities
-│   │   ├── models/      # Pydantic data models
-│   │   ├── orchestration/  # ReAct-based agent orchestration
-│   │   ├── pipelines/   # Document ingestion pipeline
-│   │   ├── rag/         # RAG components (retrievers, embeddings)
-│   │   └── main.py      # FastAPI application entry point
-│   ├── tests/           # Pytest test suite
-│   ├── pyproject.toml   # Python dependencies (uv)
-│   └── Dockerfile
-├── frontend/            # Next.js/React frontend
-│   ├── app/            # Next.js App Router pages
-│   │   ├── chat/       # Chat interface
-│   │   ├── checklist/  # Checklist view
-│   │   └── results/    # Analysis results
-│   ├── components/     # React components
-│   │   ├── chat/       # Chat UI components
-│   │   ├── upload/     # Document upload components
-│   │   └── ui/         # Shadcn/ui components
-│   ├── lib/            # Utilities and API client
-│   └── Dockerfile
-├── data/               # Source documents (PDFs)
-├── golden_dataset/     # Synthetic golden dataset for evaluation
-├── notebooks/          # Jupyter notebooks for testing/demos
-├── docs/               # Project documentation
-│   ├── prd/           # Product requirements
-│   ├── architecture/  # Architecture documentation
-│   └── stories/       # User stories
-├── docker-compose.yml  # Service orchestration
-└── Makefile           # Development commands
+│   │   ├── agents/          # 5 AI agents
+│   │   ├── api/v1/          # REST API endpoints
+│   │   ├── orchestration/   # Agent coordination
+│   │   ├── pipelines/       # Document ingestion
+│   │   └── rag/             # RAG components & evaluation
+│   ├── tests/               # Pytest tests
+│   ├── data/                # Sample PDFs
+│   ├── golden_dataset/      # RAGAS test data
+│   └── pyproject.toml       # Dependencies (uv)
+├── frontend/
+│   ├── app/                 # Next.js pages
+│   ├── components/          # React components
+│   └── lib/                 # API client
+├── notebooks/               # Jupyter notebooks
+│   ├── combined_notebooks_v2.ipynb  # Comprehensive demo
+│   └── E01-E08 notebooks    # Individual demos
+└── docs/                    # Documentation
 ```
 
-## 🛠️ Technology Stack
+## 🔧 Configuration
 
-### Backend
-- **Python 3.11/3.12** - Programming language
-- **FastAPI** - High-performance web framework
-- **LangChain & LangGraph** - Agent framework and orchestration
-- **RAGAS** - RAG evaluation framework
-- **Qdrant** - Vector database for embeddings
-- **OpenAI API** - LLM and embeddings (gpt-4o-mini, text-embedding-3-small)
-- **uv** - Fast Python package manager
-- **Pytest** - Testing framework
-
-### Frontend
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **Shadcn/ui** - Accessible UI components (Radix + Tailwind)
-- **Zustand** - Lightweight state management
-
-### Infrastructure
-- **Docker & Docker Compose** - Containerization and orchestration
-- **Qdrant** - Vector database
-
-## 🔧 Environment Setup
-
-### Backend Environment Variables
-
-Copy `backend/.env.example` to `backend/.env` and configure:
+### Required: `backend/.env`
 
 ```bash
-# Required
-OPENAI_API_KEY=sk-...                    # Your OpenAI API key
+# OpenAI (Required)
+OPENAI_API_KEY=sk-...
 
-# LLM Configuration
-LLM_MODEL=gpt-4o-mini                    # Model for agents
-LLM_TEMPERATURE=0.0                      # Temperature (0.0 = deterministic)
-LLM_MAX_TOKENS=2000                      # Max tokens per response
+# Optional - LangSmith Tracing
+LANGCHAIN_API_KEY=...
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_PROJECT=Legal-OS-Evaluation
 
-# Embedding Configuration
-EMBEDDING_MODEL=text-embedding-3-small   # Embedding model
-EMBEDDING_DIMENSIONS=1536                # Embedding dimensions
+# Optional - Cohere Reranking
+COHERE_API_KEY=...
 
-# Qdrant Configuration
-QDRANT_HOST=qdrant                       # Use 'localhost' for local dev
-QDRANT_PORT=6333
-QDRANT_COLLECTION_NAME=legal_documents
+# LLM Settings
+LLM_MODEL=gpt-4o-mini
+LLM_TEMPERATURE=0.0
 
-# RAG Configuration
-CHUNK_SIZE=1000                          # Document chunk size
-CHUNK_OVERLAP=200                        # Overlap between chunks
-RETRIEVAL_TOP_K=5                        # Number of chunks to retrieve
-SIMILARITY_THRESHOLD=0.6                 # Minimum similarity score
+# RAG Settings
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+RETRIEVAL_TOP_K=5
 ```
 
-### Frontend Environment Variables
+## 📊 RAGAS Evaluation
 
-The frontend uses `NEXT_PUBLIC_API_URL` which is set in `docker-compose.yml`. For local development, it defaults to `http://localhost:8000`.
+The system evaluates 10 retriever configurations:
 
-## 📚 API Endpoints
+**Chunking Strategies (2):**
+- Naive (RecursiveCharacterTextSplitter)
+- Semantic (Semantic-based splitting)
 
-### Document Management
-- `POST /api/v1/upload` - Upload and process a legal document
-- `GET /api/v1/documents` - List all uploaded documents
-- `GET /api/v1/documents/{doc_id}` - Get document details
+**Retrievers (5):**
+1. Vector Similarity
+2. BM25 Keyword
+3. Multi-Query
+4. Ensemble (Vector + BM25 + Multi-Query)
+5. Cohere Reranking (if API key provided)
 
-### Analysis & Querying
-- `POST /api/v1/query` - Query documents with RAG retrieval
-- `POST /api/v1/chat` - Interactive chat with document context
-- `POST /api/v1/orchestrate` - Run full multi-agent analysis
+**Results:**
+- Ranked table (best to worst)
+- RAGAS metrics: Precision, Recall, Faithfulness, Relevancy
+- Performance vs accuracy analysis
+- Best retriever recommendation
 
-### Agent Operations
-- `POST /api/v1/agents/clause-extraction` - Extract clauses from document
-- `POST /api/v1/agents/risk-scoring` - Analyze risks in document
-- `POST /api/v1/agents/summary` - Generate document summary
-- `POST /api/v1/agents/checklist` - Generate due diligence checklist
+## 🤖 AI Agents
 
-### Health & Status
-- `GET /health` - Health check endpoint
+### 1. Clause Extraction Agent
+Extracts M&A clauses (payment terms, warranties, indemnification, etc.) and detects red flags.
 
-Full API documentation available at: http://localhost:8000/docs
+### 2. Risk Scoring Agent
+Assigns risk scores (0-100) to clauses based on defined rules and categorizes as Low/Medium/High/Critical.
 
-## 🧪 Development Workflow
+### 3. Summary Agent
+Generates comprehensive M&A diligence memos with executive summary, findings, and recommendations.
 
-### 1. Make Changes
-Edit backend or frontend code. Changes are hot-reloaded in local dev mode.
+### 4. Source Tracker
+Tracks provenance of all findings with document references and page numbers.
 
-### 2. Run Tests
+### 5. Checklist Agent
+Creates due diligence checklists and follow-up questions based on analysis.
 
-```bash
-# Backend tests (local)
-cd backend && uv run pytest -v
-
-# Backend tests (Docker)
-make test
-
-# Run specific test file
-cd backend && uv run pytest tests/test_ingestion.py -v
-```
-
-### 3. Code Quality
-
-```bash
-# Format code
-make format
-
-# Lint code
-make lint
-
-# Backend linting only
-make backend-lint
-
-# Frontend linting only
-make frontend-lint
-```
-
-### 4. Test in Docker
-
-```bash
-# Rebuild and restart services
-make build
-make restart
-
-# View logs
-make logs
-
-# View specific service logs
-make logs-backend
-make logs-frontend
-```
-
-## 📋 Available Make Commands
-
-### Local Development (Fast)
-```bash
-make install-all      # Install all dependencies
-make qdrant           # Start Qdrant in Docker
-make backend          # Start backend locally (port 8000)
-make frontend         # Start frontend locally (port 3000)
-make dev-all          # Start both backend & frontend
-make stop-local       # Stop local processes
-make clean-local      # Clean caches
-```
-
-### Docker/Production
-```bash
-make build            # Build Docker containers
-make start            # Start all services
-make stop             # Stop all services
-make restart          # Restart all services
-make clean            # Remove containers and volumes
-make logs             # View all logs
-```
-
-### Individual Services
-```bash
-make restart-backend  # Restart backend only
-make restart-frontend # Restart frontend only
-make logs-backend     # Backend logs only
-make logs-frontend    # Frontend logs only
-```
-
-### Testing & Quality
-```bash
-make test             # Run backend tests
-make format           # Format all code
-make lint             # Lint all code
-```
-
-Run `make help` to see all available commands.
-
-## 🔍 Testing
-
-### Backend Tests
+## 🧪 Testing
 
 ```bash
 # Run all tests
-cd backend && uv run pytest -v
+cd backend
+uv run pytest -v
 
-# Run specific test categories
-uv run pytest tests/test_ingestion.py -v      # Ingestion pipeline
-uv run pytest tests/test_rag.py -v            # RAG components
-uv run pytest tests/test_agents/ -v           # Agent tests
-uv run pytest tests/test_api.py -v            # API endpoints
+# Run specific tests
+uv run pytest tests/test_agents/ -v
+uv run pytest tests/test_rag.py -v
 
-# Run with coverage
+# With coverage
 uv run pytest --cov=app --cov-report=html
 ```
 
-### Frontend Tests
+## 🐳 Docker (Optional - For Production)
 
 ```bash
-cd frontend
-npm run test          # Run tests
-npm run test:watch    # Watch mode
+# Build and start all services
+docker-compose up --build
+
+# Access services
+# Frontend: http://localhost:3000
+# Backend: http://localhost:8000
+# Qdrant: http://localhost:6333
 ```
 
-## 🎓 Jupyter Notebooks
+**Note:** Docker is optional for development. The system works with in-memory Qdrant.
 
-Interactive notebooks for testing and demonstration:
+## 📖 API Endpoints
 
-```bash
-# Start Jupyter
-cd notebooks
-jupyter notebook
+### Document Operations
+- `POST /api/v1/upload` - Upload PDF document
+- `POST /api/v1/query` - Query with RAG
+- `POST /api/v1/chat` - Interactive chat
 
-# Or use the Python scripts directly
-python E01_Pipeline_Foundation.py
-python E08_Orchestration_Demo.py
-```
+### Agent Operations
+- `POST /api/v1/agents/clause-extraction` - Extract clauses
+- `POST /api/v1/agents/risk-scoring` - Score risks
+- `POST /api/v1/agents/summary` - Generate memo
+- `POST /api/v1/agents/checklist` - Create checklist
 
-Available notebooks:
-- `E01_Pipeline_Foundation.py` - Document ingestion pipeline
-- `E02_Evaluation_LangChain.py` - RAG evaluation
-- `E03_Clause_Extraction_Agent.py` - Clause extraction demo
-- `E04_Risk_Scoring_Agent.py` - Risk scoring demo
-- `E05_Summary_Agent.py` - Summary generation demo
-- `E06_Source_Tracker.py` - Provenance tracking demo
-- `E07_Checklist_Agent.py` - Checklist generation demo
-- `E08_Orchestration_Demo.py` - Full multi-agent orchestration
+### Orchestration
+- `POST /api/v1/orchestrate` - Run complete analysis pipeline
+
+Full API docs: http://localhost:8000/docs
+
+## 🎓 Learning Resources
+
+### Notebooks
+Start with `notebooks/combined_notebooks_v2.ipynb` for a complete demonstration of:
+- Document ingestion
+- RAG pipeline
+- All 5 agents
+- RAGAS evaluation
+- End-to-end orchestration
+
+### Documentation
+- [Product Requirements](docs/prd/) - System specifications
+- [Architecture](docs/architecture/) - Technical design
+- [User Stories](docs/stories/) - Development stories
 
 ## 🐛 Troubleshooting
 
-### Docker Issues
-
-**Build fails:**
+### Import Errors
 ```bash
-# Clean and rebuild
-make clean
-make build
-```
-
-**Port already in use:**
-```bash
-# Check running containers
-docker ps
-
-# Stop conflicting services
-docker stop <container_id>
-
-# Or change ports in docker-compose.yml
-```
-
-**Services won't start:**
-```bash
-# Check logs
-make logs
-
-# Restart specific service
-make restart-backend
-```
-
-### Backend Issues
-
-**Import errors in IDE:**
-```bash
-# Recreate virtual environment
+# Ensure backend venv is activated
 cd backend
-rm -rf .venv
 uv sync
 
-# Select interpreter in VS Code/Cursor:
-# Cmd/Ctrl + Shift + P → "Python: Select Interpreter"
+# In VS Code/Cursor: Select interpreter
+# Cmd+Shift+P → "Python: Select Interpreter"
 # Choose: backend/.venv/bin/python
 ```
 
-**OpenAI API errors:**
-- Verify `OPENAI_API_KEY` is set in `backend/.env`
-- Check API key is valid and has credits
-- Ensure no extra spaces in `.env` file
+### OpenAI API Errors
+- Verify `OPENAI_API_KEY` in `backend/.env`
+- Check API key has credits
+- Ensure no extra spaces in `.env`
 
-**Qdrant connection errors:**
+### Notebook Kernel Issues
+- Restart kernel: Click "Restart" button
+- Select correct kernel: backend/.venv
+- Reload VS Code if kernel not visible
+
+### JSON Parsing Errors in Agents
+- Normal for LLM-based agents
+- Agents have fallback logic
+- Check logs for details
+
+## 📝 Development Notes
+
+### Using uv (Package Manager)
 ```bash
-# Ensure Qdrant is running
-docker ps | grep qdrant
+# Add package
+uv add package-name
 
-# Restart Qdrant
-make restart-qdrant
+# Remove package
+uv remove package-name
 
-# Check Qdrant logs
-make logs-qdrant
+# Sync dependencies
+uv sync
+
+# Run command in venv
+uv run python script.py
 ```
 
-### Frontend Issues
+### LangChain Version
+This project uses **LangChain 0.3.x** (stable) for compatibility with `langchain-cohere`.
 
-**Module not found:**
-```bash
-# Reinstall dependencies
-cd frontend
-rm -rf node_modules package-lock.json
-npm install
-```
-
-**API connection errors:**
-- Verify backend is running on port 8000
-- Check `NEXT_PUBLIC_API_URL` environment variable
-- Ensure CORS is configured correctly in backend
-
-### General Issues
-
-**Hot reload not working:**
-- Restart the development server
-- Check file watchers aren't exhausted (increase limit on Linux)
-
-**Tests failing:**
-- Ensure all services are running (`make start`)
-- Check environment variables are set
-- Verify OpenAI API key is valid
-
-## 📖 Documentation
-
-- **[Product Requirements](docs/prd/)** - Detailed product specifications
-- **[Architecture](docs/architecture/)** - System architecture and design
-- **[User Stories](docs/stories/)** - Development user stories
-- **[API Documentation](http://localhost:8000/docs)** - Interactive API docs (when running)
+### In-Memory vs Docker Qdrant
+- **Development**: Uses in-memory Qdrant (no Docker needed)
+- **Production**: Use Docker Qdrant for persistence
 
 ## 🤝 Contributing
 
-1. Create a feature branch
-2. Make your changes
-3. Run tests: `make test`
-4. Format code: `make format`
-5. Lint code: `make lint`
-6. Submit a pull request
+1. Create feature branch
+2. Make changes
+3. Run tests: `cd backend && uv run pytest`
+4. Format code: `cd backend && uv run black .`
+5. Submit PR
 
 ## 📄 License
 
-[Your License Here]
+[Your License]
 
-## 🙏 Acknowledgments
+---
 
-Built with:
-- [LangChain](https://www.langchain.com/) - Agent framework
-- [FastAPI](https://fastapi.tiangolo.com/) - Backend framework
-- [Next.js](https://nextjs.org/) - Frontend framework
-- [Qdrant](https://qdrant.tech/) - Vector database
-- [Shadcn/ui](https://ui.shadcn.com/) - UI components
+**Built with:** LangChain • LangGraph • FastAPI • Next.js • Qdrant • OpenAI

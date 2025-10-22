@@ -17,144 +17,61 @@ Legal-OS analyzes M&A legal documents using specialized AI agents to extract cla
 ## 🏗️ System Architecture
 
 ```mermaid
-graph TB
-    subgraph "User Interface"
-        User[👤 User]
-        Frontend[Next.js Frontend<br/>TypeScript + Tailwind + Shadcn/ui]
-    end
-
-    subgraph "API Layer"
-        API[FastAPI Backend<br/>REST API]
-        Upload[/api/v1/upload]
-        Query[/api/v1/query]
-        Chat[/api/v1/chat]
-        Orchestrate[/api/v1/orchestrate]
-    end
-
-    subgraph "Document Processing Pipeline"
-        Ingestion[Ingestion Pipeline<br/>PDF Processing]
-        Chunking[Chunking Strategy<br/>Naive/Semantic]
-        Embedding[OpenAI Embeddings<br/>text-embedding-3-small]
-        VectorStore[(Qdrant Vector Store<br/>In-Memory/Docker)]
-    end
-
-    subgraph "RAG Components"
-        Retrievers[5 Retriever Strategies]
-        VectorSim[Vector Similarity]
-        BM25[BM25 Keyword]
-        MultiQuery[Multi-Query]
-        Ensemble[Ensemble]
-        Rerank[Cohere Reranking]
-        
-        Retrievers --> VectorSim
-        Retrievers --> BM25
-        Retrievers --> MultiQuery
-        Retrievers --> Ensemble
-        Retrievers --> Rerank
-    end
-
-    subgraph "LangGraph Orchestration"
-        Supervisor[Supervisor Agent<br/>ReAct Pattern]
-        
-        subgraph "Specialized Agents"
-            Agent1[1️⃣ Clause Extraction<br/>Extract M&A clauses]
-            Agent2[2️⃣ Risk Scoring<br/>Score 0-100]
-            Agent3[3️⃣ Summary<br/>Generate memo]
-            Agent4[4️⃣ Provenance<br/>Track sources]
-            Agent5[5️⃣ Checklist<br/>Follow-up questions]
-        end
-        
-        Supervisor -->|Route| Agent1
-        Supervisor -->|Route| Agent2
-        Supervisor -->|Route| Agent3
-        Supervisor -->|Route| Agent4
-        Supervisor -->|Route| Agent5
-        
-        Agent1 -->|Complete| Supervisor
-        Agent2 -->|Complete| Supervisor
-        Agent3 -->|Complete| Supervisor
-        Agent4 -->|Complete| Supervisor
-        Agent5 -->|Complete| Supervisor
-    end
-
-    subgraph "External Services"
-        OpenAI[OpenAI API<br/>gpt-4o-mini]
-        Cohere[Cohere API<br/>Reranking]
-        LangSmith[LangSmith<br/>Tracing & Monitoring]
-    end
-
-    subgraph "Evaluation Framework"
-        RAGAS[RAGAS Evaluation<br/>10 Configurations]
-        Golden[Golden Dataset<br/>Test Cases]
-        Metrics[Metrics: Precision, Recall<br/>Faithfulness, Relevancy]
-    end
-
-    subgraph "Development Tools"
-        Notebooks[Jupyter Notebooks<br/>8 Demo Scripts]
-        Tests[Pytest Suite<br/>Unit & Integration]
-    end
-
-    %% User Flow
-    User -->|Interact| Frontend
-    Frontend -->|HTTP| API
+flowchart TD
+    USER["👤 User"] --> FRONTEND["🎨 Next.js Frontend<br/>React + TypeScript"]
     
-    %% API Routes
-    API --> Upload
-    API --> Query
-    API --> Chat
-    API --> Orchestrate
+    FRONTEND --> API["⚡ FastAPI Backend<br/>REST API"]
     
-    %% Document Processing
-    Upload --> Ingestion
-    Ingestion --> Chunking
-    Chunking --> Embedding
-    Embedding --> VectorStore
+    API --> UPLOAD["📤 Document Upload<br/>PDF Processing"]
+    API --> CHAT["💬 Interactive Chat<br/>RAG Queries"]
+    API --> ORCHESTRATE["🎯 Full Analysis<br/>Multi-Agent Pipeline"]
     
-    %% Query Flow
-    Query --> Retrievers
-    Chat --> Retrievers
-    Retrievers --> VectorStore
+    UPLOAD --> PROCESSING["📄 Document Processing<br/>Chunking + Embeddings"]
+    PROCESSING --> VECTOR["💾 Qdrant Vector Store<br/>Semantic Search"]
     
-    %% Orchestration Flow
-    Orchestrate --> Supervisor
-    Agent1 --> Retrievers
-    Agent2 --> Agent1
-    Agent3 --> Agent2
-    Agent4 --> Agent3
-    Agent5 --> Agent4
+    CHAT --> RAG["🔍 RAG Pipeline<br/>5 Retriever Strategies"]
+    RAG --> VECTOR
     
-    %% External Dependencies
-    Embedding -.->|API Call| OpenAI
-    Agent1 -.->|LLM| OpenAI
-    Agent2 -.->|LLM| OpenAI
-    Agent3 -.->|LLM| OpenAI
-    Agent5 -.->|LLM| OpenAI
-    Rerank -.->|API Call| Cohere
-    Supervisor -.->|Trace| LangSmith
+    ORCHESTRATE --> AGENTS["🤖 LangGraph Orchestration<br/>4 AI Agents"]
+    AGENTS --> AGENT1["1️⃣ Clause Extraction Agent<br/>LLM-Powered"]
+    AGENTS --> AGENT2["2️⃣ Risk Scoring Agent<br/>LLM-Powered"]
+    AGENTS --> AGENT3["3️⃣ Summary Agent<br/>LLM-Powered"]
+    AGENTS --> AGENT4["4️⃣ Checklist Agent<br/>LLM-Powered"]
     
-    %% Evaluation
-    Retrievers --> RAGAS
-    Golden --> RAGAS
-    RAGAS --> Metrics
+    AGENT1 --> RAG
+    AGENT2 --> AGENT1
+    AGENT3 --> AGENT2
+    AGENT4 --> AGENT3
     
-    %% Development
-    Notebooks -.->|Test| API
-    Tests -.->|Validate| API
-
+    AGENT1 --> TRACKER["📍 Source Tracker<br/>Provenance Utility"]
+    AGENT2 --> TRACKER
+    AGENT3 --> TRACKER
+    AGENT4 --> TRACKER
+    
+    TRACKER --> RESULTS["📊 Analysis Results<br/>Memo + Checklist + Risk Scores<br/>with Source Attribution"]
+    
+    RESULTS --> FRONTEND
+    
+    AGENTS -.->|LLM Calls| OPENAI["🤖 OpenAI API<br/>gpt-4o-mini"]
+    RAG -.->|Optional| COHERE["⭐ Cohere Rerank"]
+    AGENTS -.->|Tracing| LANGSMITH["📊 LangSmith"]
+    
     %% Styling
-    classDef frontend fill:#e1f5ff,stroke:#01579b,stroke-width:2px
-    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef agent fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef storage fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef eval fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef frontend fill:#e1f5ff,stroke:#01579b,stroke-width:3px,color:#000000,font-weight:bold
+    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000000,font-weight:bold
+    classDef processing fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000000,font-weight:bold
+    classDef agents fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000000,font-weight:bold
+    classDef utility fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,color:#000000,font-weight:bold
+    classDef external fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000000,font-weight:bold
+    classDef output fill:#e0f2f1,stroke:#00695c,stroke-width:2px,color:#000000,font-weight:bold
     
-    class Frontend,User frontend
-    class API,Upload,Query,Chat,Orchestrate,Ingestion,Chunking,Embedding backend
-    class Supervisor,Agent1,Agent2,Agent3,Agent4,Agent5 agent
-    class VectorStore,Retrievers,VectorSim,BM25,MultiQuery,Ensemble,Rerank storage
-    class OpenAI,Cohere,LangSmith external
-    class RAGAS,Golden,Metrics,Notebooks,Tests eval
+    class USER,FRONTEND frontend
+    class API,UPLOAD,CHAT,ORCHESTRATE backend
+    class PROCESSING,VECTOR,RAG processing
+    class AGENTS,AGENT1,AGENT2,AGENT3,AGENT4 agents
+    class TRACKER utility
+    class OPENAI,COHERE,LANGSMITH external
+    class RESULTS output
 ```
 
 ### Architecture Highlights

@@ -4,6 +4,8 @@
 **Submission Date:** October 21, 2025  
 **GitHub Repository:** [Legal-OS](https://github.com/iKwesi/Legal-OS)
 
+**Loom Video:** [Loom Video](https://)
+
 ---
 
 ## Executive Summary
@@ -304,12 +306,23 @@ We evaluated both chunking strategies using RAGAS metrics against our Synthetic 
 
 **Detailed Justification:**
 
+**Legal Domain Context:**
+
+For legal M&A due diligence, **recall (completeness) is more critical than precision**:
+- **Missing a clause is costly**: Overlooking a termination right, indemnification cap, or change-of-control provision could lead to multi-million dollar liabilities post-acquisition
+- **False positives are manageable**: Attorneys can quickly review extra retrieved chunks (low precision impact), but cannot review what wasn't retrieved (high recall impact)
+- **Regulatory compliance**: Legal teams must demonstrate comprehensive document review for regulatory approval and audit trails
+- **Risk mitigation**: Better to flag 10 potential issues with 2 false positives than miss 1 critical risk clause
+- **Professional liability**: Missing key provisions exposes law firms to malpractice claims
+
+This legal domain requirement drives our technical decision to **prioritize recall over precision**.
+
 **Why Semantic Chunking Was Selected:**
 
 1. **Higher Context Recall (+5%)**
    - Semantic: 66.67% vs. Naive: 63.33%
    - Retrieves 5% more relevant information per query
-   - Critical for comprehensive legal analysis where missing a clause could be costly
+   - **Critical for legal**: +5% recall means finding ~1-2 more critical clauses per document
    - In M&A diligence, completeness is more important than perfect precision
 
 2. **Higher Faithfulness (+6%)**
@@ -592,11 +605,14 @@ We conducted a comprehensive evaluation of **10 different RAG configurations** u
 - **Faithfulness**: +6% improvement (92.53% vs. 87.62%)
 - **Trade-off**: -5.57% precision (87.47% vs. 93.04%)
 
-**Why Semantic Wins:**
+**Why Semantic Wins (Legal Domain Context):**
+- **Recall > Precision for Legal**: Missing a critical clause (low recall) is far more costly than reviewing extra chunks (low precision)
+- **Completeness is mandatory**: In M&A diligence, attorneys must be confident they've reviewed ALL relevant provisions for regulatory compliance
+- **Semantic chunking's +5% recall** means finding ~1-2 more critical clauses per document - potentially preventing multi-million dollar liabilities
+- **The -5.57% precision trade-off is acceptable** - attorneys can quickly filter false positives, but cannot review what wasn't retrieved
+- **Professional standards**: Legal teams prefer comprehensive analysis (high recall) over fast but potentially incomplete results (high precision)
 - Preserves complete legal provisions within chunks
 - Maintains semantic coherence across chunk boundaries
-- Better for comprehensive analysis where completeness matters
-- Acceptable precision trade-off for legal use cases
 
 **3. Ensemble Methods Show Promise**
 

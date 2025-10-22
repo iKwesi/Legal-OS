@@ -63,6 +63,54 @@ class SummaryAgent:
         self.agent_executor = create_react_agent(model=self.llm, tools=self.tools)
         logger.info("SummaryAgent initialized with create_react_agent")
     
+    def _extract_json_from_response(self, response_content: str) -> str:
+        """
+        Extract JSON from LLM response, handling markdown wrappers and extra text.
+        
+        Args:
+            response_content: Raw LLM response
+            
+        Returns:
+            Extracted JSON string
+        """
+        # Try to find JSON in ```json``` blocks
+        json_match = re.search(r'```json\s*(\{.*?\}|\[.*?\])\s*```', response_content, re.DOTALL)
+        if json_match:
+            return json_match.group(1)
+        
+        # Try to find JSON in ``` blocks (without json marker)
+        json_match = re.search(r'```\s*(\{.*?\}|\[.*?\])\s*```', response_content, re.DOTALL)
+        if json_match:
+            return json_match.group(1)
+        
+        # Try to find raw JSON (starts with { or [)
+        if response_content.strip().startswith('{') or response_content.strip().startswith('['):
+            # Find the matching closing bracket
+            content = response_content.strip()
+            if content.startswith('{'):
+                # Find matching }
+                bracket_count = 0
+                for i, char in enumerate(content):
+                    if char == '{':
+                        bracket_count += 1
+                    elif char == '}':
+                        bracket_count -= 1
+                        if bracket_count == 0:
+                            return content[:i+1]
+            elif content.startswith('['):
+                # Find matching ]
+                bracket_count = 0
+                for i, char in enumerate(content):
+                    if char == '[':
+                        bracket_count += 1
+                    elif char == ']':
+                        bracket_count -= 1
+                        if bracket_count == 0:
+                            return content[:i+1]
+        
+        # Return as-is if no JSON structure found
+        return response_content
+    
     def _create_tools(self) -> List[Tool]:
         """Create the tools available to the agent."""
         return [
@@ -202,7 +250,7 @@ Overall Risk Score: {overall_risk_score}/100 ({overall_risk_category})
 Scored Clauses:
 {clauses_summary}
 
-Provide a concise executive summary in JSON format:
+Respond ONLY with valid JSON. No explanatory text.
 {{
     "overview": "Brief 2-3 sentence overview of the document and transaction",
     "critical_findings": ["Top 3-5 most critical findings"],
@@ -213,7 +261,8 @@ Provide a concise executive summary in JSON format:
 Focus on the highest risk items and most actionable recommendations."""
             
             response = self.llm.invoke([HumanMessage(content=prompt)])
-            return response.content
+            extracted_json = self._extract_json_from_response(response.content)
+            return extracted_json
             
         except json.JSONDecodeError as e:
             logger.debug(f"Invalid JSON input to generate_executive_summary_tool: {e}")
@@ -252,7 +301,7 @@ Risk Factors:
 Clause Text:
 {clause_text[:500]}...
 
-Provide a summary in JSON format:
+Respond ONLY with valid JSON. No explanatory text before or after.
 {{
     "clause_type": "{clause_type}",
     "summary": "2-3 sentence summary of the clause provisions",
@@ -263,7 +312,9 @@ Provide a summary in JSON format:
 Be specific and actionable."""
             
             response = self.llm.invoke([HumanMessage(content=prompt)])
-            return response.content
+            # Extract JSON from response
+            extracted_json = self._extract_json_from_response(response.content)
+            return extracted_json
             
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON input to generate_clause_summary_tool: {e}")

@@ -6,6 +6,7 @@ to coordinate specialized agents for M&A document analysis.
 """
 
 import logging
+import os
 from typing import Dict, Any, List, Optional, Literal
 from datetime import datetime, UTC
 import json
@@ -14,6 +15,12 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
+
+# Enable LangSmith tracing if API key is configured
+if os.getenv("LANGCHAIN_API_KEY"):
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "Legal-OS-Production")
+    logging.getLogger(__name__).info("LangSmith tracing enabled for orchestration")
 
 from app.models.orchestration import OrchestrationState, ChecklistItem
 from app.models.agent import (

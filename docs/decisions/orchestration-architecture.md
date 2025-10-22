@@ -321,6 +321,149 @@ class ClauseExtractionAgent:
 
 ---
 
+## Decision 3: Explicit Orchestration Pattern (No Dynamic Agent Routing)
+
+### Decision
+
+**The orchestrator uses explicit, direct method calls to invoke agents sequentially, rather than wrapping agents as tools for dynamic LLM-based routing.**
+
+**Implementation Pattern:**
+```python
+# backend/app/orchestration/pipeline.py
+class DocumentOrchestrator:
+    def run_orchestration(self, document_path: str, document_id: str):
+        # Explicit sequential calls - no tool wrapping
+        clause_result = self.clause_agent.extract_clauses(document_id)
+        risk_result = self.risk_agent.score_risks(clause_result)
+        summary_result = self.summary_agent.generate_summary(risk_result)
+        checklist_result = self.checklist_agent.generate_checklist(summary_result)
+        return results
+```
+
+### Rationale
+
+#### 1. **Fixed Workflow - No Need for Dynamic Routing**
+- M&A due diligence always follows the same sequence
+- Agent order is predetermined by data dependencies
+- No conditional logic needed for agent selection
+- LLM-based routing would add unnecessary complexity
+
+#### 2. **Cost Efficiency**
+- **No routing overhead**: Avoids LLM calls to decide which agent to invoke next
+- **Predictable costs**: Know exactly how many LLM calls will be made
+- **Estimated savings**: ~3-5 LLM calls per document (routing decisions)
+
+#### 3. **Deterministic Execution**
+- **Same input → same output**: Always executes agents in same order
+- **No routing errors**: Can't accidentally skip an agent or execute out of order
+- **Reproducible results**: Critical for legal compliance and auditing
+
+#### 4. **Simplified Debugging**
+- **Clear stack traces**: Can see exact call chain in errors
+- **No tool resolution**: Don't need to debug why LLM chose certain agent
+- **Linear logs**: Chronological execution makes logs easy to follow
+
+#### 5. **Better Type Safety**
+- **Explicit parameters**: Each agent call has typed parameters
+- **IDE support**: Autocomplete and type checking work properly
+- **Compile-time checks**: Catch errors before runtime
+
+### What We Avoided: Dynamic Tool-Based Agent Routing
+
+**Alternative pattern (not used):**
+```python
+# Wrapping agents as tools for dynamic routing
+from langchain_core.tools import tool
+
+@tool
+def invoke_clause_extraction(document_id: str) -> dict:
+    """Extract clauses from document."""
+    return clause_agent.extract_clauses(document_id)
+
+@tool
+def invoke_risk_scoring(clauses: dict) -> dict:
+    """Score risks for clauses."""
+    return risk_agent.score_risks(clauses)
+
+# Supervisor decides which tool/agent to call
+supervisor = create_react_agent(
+    llm,
+    tools=[invoke_clause_extraction, invoke_risk_scoring, ...],
+    state_modifier="Call agents in correct order for M&A analysis"
+)
+```
+
+**Why we avoided this:**
+- **Unnecessary LLM calls**: LLM must decide agent order (we already know it)
+- **Non-deterministic**: LLM might skip agents or execute in wrong order
+- **Higher cost**: Extra tokens for routing decisions
+- **Harder to debug**: Tool selection logic is opaque
+- **Overkill**: Dynamic routing is for variable workflows, not fixed sequences
+
+### When Dynamic Routing Makes Sense
+
+Dynamic agent routing is valuable for:
+- **Variable workflows**: Different inputs need different agent combinations
+- **Conditional execution**: Some agents only needed in certain cases
+- **User-driven**: User decides which analysis to run
+- **Exploratory**: Agent discovers what information is needed
+
+**Example**: Customer support system routing to different specialists based on question type.
+
+**Our case**: M&A diligence is a fixed, sequential workflow.
+
+### Tool Definition Pattern
+
+**Note on Tool Usage Within Agents:**
+
+While we don't use `@tool` decorator for agent routing, **all agents DO use the `Tool` class** to define their own tools:
+
+```python
+# All agents use Tool class (not @tool decorator)
+from langchain_core.tools import Tool
+
+tools = [
+    Tool(
+        name="search_document",
+        description="Search for relevant clauses",
+        func=self._search_document_tool
+    ),
+    Tool(
+        name="extract_clause",
+        description="Extract clause details",
+        func=self._extract_clause_tool
+    )
+]
+
+# Pass to create_react_agent
+agent = create_react_agent(llm, tools=tools)
+```
+
+**Why `Tool` class over `@tool` decorator:**
+- More explicit and clear
+- Better for class methods (agents are classes)
+- Easier to test tool functions independently
+- More control over tool configuration
+
+### Consequences
+
+#### Positive
+- ✅ **Simple, readable code**: Linear execution is easy to understand
+- ✅ **Lower cost**: No LLM calls for routing
+- ✅ **Deterministic**: Predictable execution every time
+- ✅ **Type-safe**: Full IDE support and type checking
+- ✅ **Easy testing**: Can mock individual agent calls
+
+#### Negative
+- ⚠️ **Less flexible**: Hard-coded execution order
+- ⚠️ **Manual updates**: Need to modify code to change workflow
+
+#### Neutral
+- 🔄 **Can add conditionals**: If needed, can add if/else logic for optional agents
+- 🔄 **Hybrid possible**: Could use dynamic routing for future features
+
+---
+
 ## Monitoring and Review
 
 ### Success Metrics
@@ -392,4 +535,3 @@ class ClauseExtractionAgent:
 **Conclusion**: For MVP, sequential execution provides better cost-efficiency and maintainability. Parallel execution can be added later for performance-critical use cases.
 
 ---
-
